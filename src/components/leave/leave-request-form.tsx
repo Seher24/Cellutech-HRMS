@@ -2,51 +2,68 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createLeaveRequestAction } from "@/lib/actions/leave";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+const schema = z.object({
+  leaveTypeId: z.string().min(1, "Select a leave type"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  reason: z.string().min(5, "Reason must be at least 5 characters").max(1000),
+});
+
+type FormValues = z.infer<typeof schema>;
 type LeaveTypeOption = { id: string; name: string; remaining: number };
 
 export function LeaveRequestForm({ leaveTypes }: { leaveTypes: LeaveTypeOption[] }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    setError(null);
-    setSuccess(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      leaveTypeId: leaveTypes[0]?.id ?? "",
+      startDate: "",
+      endDate: "",
+      reason: "",
+    },
+  });
+
+  function onSubmit(values: FormValues) {
+    setServerError(null);
     startTransition(async () => {
-      const result = await createLeaveRequestAction({
-        leaveTypeId: String(fd.get("leaveTypeId")),
-        startDate: String(fd.get("startDate")),
-        endDate: String(fd.get("endDate")),
-        reason: String(fd.get("reason")),
-      });
+      const result = await createLeaveRequestAction(values);
       if (result?.error) {
-        setError(result.error);
+        setServerError(result.error);
         return;
       }
-      setSuccess(true);
       router.push("/leave/my-requests");
       router.refresh();
     });
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-xl space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto max-w-xl space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+    >
       <div className="space-y-2">
         <Label htmlFor="leaveTypeId">Leave type</Label>
         <select
           id="leaveTypeId"
-          name="leaveTypeId"
-          required
           className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+          {...register("leaveTypeId")}
         >
           {leaveTypes.map((lt) => (
             <option key={lt.id} value={lt.id}>
@@ -54,31 +71,40 @@ export function LeaveRequestForm({ leaveTypes }: { leaveTypes: LeaveTypeOption[]
             </option>
           ))}
         </select>
+        {errors.leaveTypeId && (
+          <p className="text-xs text-red-600">{errors.leaveTypeId.message}</p>
+        )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="startDate">Start date</Label>
-          <Input id="startDate" name="startDate" type="date" required />
+          <Input id="startDate" type="date" {...register("startDate")} />
+          {errors.startDate && (
+            <p className="text-xs text-red-600">{errors.startDate.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="endDate">End date</Label>
-          <Input id="endDate" name="endDate" type="date" required />
+          <Input id="endDate" type="date" {...register("endDate")} />
+          {errors.endDate && (
+            <p className="text-xs text-red-600">{errors.endDate.message}</p>
+          )}
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="reason">Reason</Label>
-        <Textarea id="reason" name="reason" required minLength={5} rows={4} />
+        <Textarea id="reason" rows={4} {...register("reason")} />
+        {errors.reason && (
+          <p className="text-xs text-red-600">{errors.reason.message}</p>
+        )}
       </div>
-      {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-      )}
-      {success && (
-        <p className="rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-800">
-          Leave submitted successfully.
+      {serverError && (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {serverError}
         </p>
       )}
       <Button type="submit" disabled={pending} className="bg-teal-700 hover:bg-teal-800">
-        {pending ? "Submitting…" : "Submit request"}
+        {pending ? "Submitting..." : "Submit request"}
       </Button>
     </form>
   );

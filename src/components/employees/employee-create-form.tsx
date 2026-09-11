@@ -2,10 +2,35 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmployeeAction } from "@/lib/actions/hr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const schema = z.object({
+  firstName: z.string().min(1, "Required"),
+  lastName: z.string().min(1, "Required"),
+  email: z.string().email("Valid email required"),
+  phone: z.string().optional(),
+  roleName: z.enum([
+    "SUPER_ADMIN",
+    "HR_MANAGER",
+    "DEPARTMENT_HEAD",
+    "TEAM_LEAD",
+    "EMPLOYEE",
+  ]),
+  subsidiaryId: z.string().min(1, "Required"),
+  departmentId: z.string().min(1, "Required"),
+  designationId: z.string().optional(),
+  managerId: z.string().optional(),
+  joiningDate: z.string().min(1, "Required"),
+  password: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof schema>;
 
 type Props = {
   subsidiaries: { id: string; name: string }[];
@@ -17,11 +42,36 @@ type Props = {
 
 export function EmployeeCreateForm(props: Props) {
   const router = useRouter();
-  const [subsidiaryId, setSubsidiaryId] = useState(props.subsidiaries[0]?.id ?? "");
-  const [departmentId, setDepartmentId] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      roleName: "EMPLOYEE",
+      subsidiaryId: props.subsidiaries[0]?.id ?? "",
+      departmentId: "",
+      designationId: "",
+      managerId: "",
+      joiningDate: "",
+      password: "",
+    },
+  });
+
+  const subsidiaryId = watch("subsidiaryId");
+  const departmentId = watch("departmentId");
 
   const departments = useMemo(
     () => props.departments.filter((d) => d.subsidiaryId === subsidiaryId),
@@ -32,63 +82,68 @@ export function EmployeeCreateForm(props: Props) {
     [props.designations, departmentId]
   );
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+  function onSubmit(values: FormValues) {
     setError(null);
     setMessage(null);
     startTransition(async () => {
       const result = await createEmployeeAction({
-        firstName: String(fd.get("firstName")),
-        lastName: String(fd.get("lastName")),
-        email: String(fd.get("email")),
-        phone: String(fd.get("phone") || "") || undefined,
-        roleName: String(fd.get("roleName")) as never,
-        subsidiaryId: String(fd.get("subsidiaryId")),
-        departmentId: String(fd.get("departmentId")),
-        designationId: String(fd.get("designationId") || "") || undefined,
-        managerId: String(fd.get("managerId") || "") || undefined,
-        joiningDate: String(fd.get("joiningDate")),
-        password: String(fd.get("password") || "") || undefined,
+        ...values,
+        phone: values.phone || undefined,
+        designationId: values.designationId || undefined,
+        managerId: values.managerId || undefined,
+        password: values.password || undefined,
       });
       if (result?.error) {
         setError(result.error);
         return;
       }
-      setMessage(
-        `Employee created. Temporary password: ${result.temporaryPassword}`
-      );
+      setMessage(`Employee created. Temporary password: ${result.temporaryPassword}`);
+      reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        roleName: "EMPLOYEE",
+        subsidiaryId: props.subsidiaries[0]?.id ?? "",
+        departmentId: "",
+        designationId: "",
+        managerId: "",
+        joiningDate: "",
+        password: "",
+      });
       router.refresh();
-      (e.target as HTMLFormElement).reset();
     });
   }
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
     >
       <h3 className="text-lg font-semibold text-slate-900">Onboard employee</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>First name</Label>
-          <Input name="firstName" required />
+          <Input {...register("firstName")} />
+          {errors.firstName && <p className="text-xs text-red-600">{errors.firstName.message}</p>}
         </div>
         <div className="space-y-2">
           <Label>Last name</Label>
-          <Input name="lastName" required />
+          <Input {...register("lastName")} />
+          {errors.lastName && <p className="text-xs text-red-600">{errors.lastName.message}</p>}
         </div>
         <div className="space-y-2">
           <Label>Email</Label>
-          <Input name="email" type="email" required />
+          <Input type="email" {...register("email")} />
+          {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
         </div>
         <div className="space-y-2">
           <Label>Phone</Label>
-          <Input name="phone" />
+          <Input {...register("phone")} />
         </div>
         <div className="space-y-2">
           <Label>Role</Label>
-          <select name="roleName" required className="h-9 w-full rounded-lg border px-3 text-sm">
+          <select className="h-9 w-full rounded-lg border px-3 text-sm" {...register("roleName")}>
             {props.roles.map((r) => (
               <option key={r.name} value={r.name}>
                 {r.label}
@@ -98,19 +153,16 @@ export function EmployeeCreateForm(props: Props) {
         </div>
         <div className="space-y-2">
           <Label>Joining date</Label>
-          <Input name="joiningDate" type="date" required />
+          <Input type="date" {...register("joiningDate")} />
+          {errors.joiningDate && <p className="text-xs text-red-600">{errors.joiningDate.message}</p>}
         </div>
         <div className="space-y-2">
           <Label>Subsidiary</Label>
           <select
-            name="subsidiaryId"
-            required
-            value={subsidiaryId}
-            onChange={(e) => {
-              setSubsidiaryId(e.target.value);
-              setDepartmentId("");
-            }}
             className="h-9 w-full rounded-lg border px-3 text-sm"
+            {...register("subsidiaryId", {
+              onChange: () => setValue("departmentId", ""),
+            })}
           >
             {props.subsidiaries.map((s) => (
               <option key={s.id} value={s.id}>
@@ -121,13 +173,7 @@ export function EmployeeCreateForm(props: Props) {
         </div>
         <div className="space-y-2">
           <Label>Department</Label>
-          <select
-            name="departmentId"
-            required
-            value={departmentId}
-            onChange={(e) => setDepartmentId(e.target.value)}
-            className="h-9 w-full rounded-lg border px-3 text-sm"
-          >
+          <select className="h-9 w-full rounded-lg border px-3 text-sm" {...register("departmentId")}>
             <option value="">Select department</option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
@@ -135,10 +181,13 @@ export function EmployeeCreateForm(props: Props) {
               </option>
             ))}
           </select>
+          {errors.departmentId && (
+            <p className="text-xs text-red-600">{errors.departmentId.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label>Designation</Label>
-          <select name="designationId" className="h-9 w-full rounded-lg border px-3 text-sm">
+          <select className="h-9 w-full rounded-lg border px-3 text-sm" {...register("designationId")}>
             <option value="">Optional</option>
             {designations.map((d) => (
               <option key={d.id} value={d.id}>
@@ -149,7 +198,7 @@ export function EmployeeCreateForm(props: Props) {
         </div>
         <div className="space-y-2">
           <Label>Manager</Label>
-          <select name="managerId" className="h-9 w-full rounded-lg border px-3 text-sm">
+          <select className="h-9 w-full rounded-lg border px-3 text-sm" {...register("managerId")}>
             <option value="">Optional</option>
             {props.managers.map((m) => (
               <option key={m.id} value={m.id}>
@@ -160,13 +209,13 @@ export function EmployeeCreateForm(props: Props) {
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label>Temporary password (optional)</Label>
-          <Input name="password" placeholder="Defaults to Password123!" />
+          <Input {...register("password")} placeholder="Defaults to Password123!" />
         </div>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {message && <p className="text-sm text-teal-700">{message}</p>}
       <Button type="submit" disabled={pending} className="bg-teal-700 hover:bg-teal-800">
-        {pending ? "Creating…" : "Create employee"}
+        {pending ? "Creating..." : "Create employee"}
       </Button>
     </form>
   );
