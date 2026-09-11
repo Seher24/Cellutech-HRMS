@@ -12,11 +12,11 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-[#f4f7fb]">
-      <div className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 self-start lg:block">
+    <div className="min-h-dvh bg-[#f4f7fb]">
+      <div className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
         <AppSidebar role={session.user.role} userName={session.user.name} />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-dvh min-w-0 flex-col lg:pl-64">
         <AppHeader />
         <main className="min-w-0 flex-1 overflow-x-hidden p-3 sm:p-4 md:p-6">
           {children}
