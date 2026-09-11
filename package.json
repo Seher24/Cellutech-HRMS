@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
+    "db:import-sqlite": "tsx scripts/migrate-sqlite-to-neon.ts",
     "postinstall": "prisma generate",
     "demo": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start.ps1"
   },

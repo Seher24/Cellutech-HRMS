@@ -13,7 +13,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen overflow-x-hidden bg-[#f4f7fb]">
-      <div className="sticky top-0 hidden h-screen shrink-0 lg:block">
+      <div className="sticky top-0 z-30 hidden h-dvh w-64 shrink-0 self-start lg:block">
         <AppSidebar role={session.user.role} userName={session.user.name} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">

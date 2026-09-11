@@ -13,13 +13,9 @@ import { MadeByCredit } from "@/components/brand/made-by-credit";
 
 export function MobileNav({ role }: { role: RoleName }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const items = getNavForRole(role);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const canPortal = typeof document !== "undefined";
 
   useEffect(() => {
     if (!open) return;
@@ -36,7 +32,7 @@ export function MobileNav({ role }: { role: RoleName }) {
   }, [open]);
 
   const drawer =
-    open && mounted
+    open && canPortal
       ? createPortal(
           <div
             className="fixed inset-0 z-[100] flex h-dvh w-screen flex-col bg-[#0b1220] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
