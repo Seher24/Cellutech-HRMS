@@ -1,9 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 import type { RoleName } from "@prisma/client";
-import type { SessionUser } from "@/lib/rbac";
 
 /**
- * Edge-safe Auth.js config (no Prisma / bcrypt).
+ * Edge-safe Auth.js config (no Prisma runtime / bcrypt).
  * Used by middleware. Full providers live in auth.ts.
  */
 export const authConfig = {
@@ -17,22 +16,20 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id!;
-        token.role = user.role;
-        token.subsidiaryId = user.subsidiaryId;
-        token.departmentId = user.departmentId;
+        token.role = (user as { role?: RoleName }).role;
+        token.subsidiaryId = (user as { subsidiaryId?: string | null }).subsidiaryId;
+        token.departmentId = (user as { departmentId?: string | null }).departmentId;
       }
       return token;
     },
     async session({ session, token }) {
-      const user: SessionUser = {
+      session.user = {
+        ...session.user,
         id: (token.id as string) ?? "",
-        email: session.user.email!,
-        name: session.user.name ?? "",
         role: token.role as RoleName,
         subsidiaryId: (token.subsidiaryId as string | null) ?? null,
         departmentId: (token.departmentId as string | null) ?? null,
-      };
-      session.user = user as typeof session.user;
+      } as typeof session.user;
       return session;
     },
   },
