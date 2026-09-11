@@ -39,9 +39,8 @@ export function getNavForRole(role: RoleName): NavItem[] {
     role === RoleName.TEAM_LEAD
   ) {
     base.push({ title: "Approvals", href: "/leave/approvals", icon: ClipboardCheck });
+    base.push({ title: "Leave Calendar", href: "/leave/calendar", icon: CalendarDays });
   }
-
-  base.push({ title: "Leave Calendar", href: "/leave/calendar", icon: CalendarDays });
 
   if (role === RoleName.SUPER_ADMIN || role === RoleName.HR_MANAGER) {
     base.push({ title: "Organization", href: "/organization", icon: Building2 });

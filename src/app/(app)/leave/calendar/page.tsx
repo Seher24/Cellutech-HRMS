@@ -17,6 +17,13 @@ export default async function LeaveCalendarPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  const canView =
+    session.user.role === RoleName.SUPER_ADMIN ||
+    session.user.role === RoleName.HR_MANAGER ||
+    session.user.role === RoleName.DEPARTMENT_HEAD ||
+    session.user.role === RoleName.TEAM_LEAD;
+  if (!canView) redirect("/dashboard");
+
   const where =
     session.user.role === RoleName.SUPER_ADMIN
       ? { status: "APPROVED" as const }
@@ -25,16 +32,21 @@ export default async function LeaveCalendarPage() {
             status: "APPROVED" as const,
             user: { managerId: session.user.id },
           }
-        : {
-            status: "APPROVED" as const,
-            user: {
-              subsidiaryId: session.user.subsidiaryId,
-              ...(session.user.role === RoleName.DEPARTMENT_HEAD &&
-              session.user.departmentId
-                ? { departmentId: session.user.departmentId }
-                : {}),
-            },
-          };
+        : session.user.role === RoleName.DEPARTMENT_HEAD
+          ? {
+              status: "APPROVED" as const,
+              user: {
+                subsidiaryId: session.user.subsidiaryId,
+                ...(session.user.departmentId
+                  ? { departmentId: session.user.departmentId }
+                  : {}),
+              },
+            }
+          : {
+              // HR_MANAGER — subsidiary-wide coverage
+              status: "APPROVED" as const,
+              user: { subsidiaryId: session.user.subsidiaryId },
+            };
 
   const leaves = await prisma.leaveRequest.findMany({
     where,
