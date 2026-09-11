@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  SUPER_ADMIN
+  HR_MANAGER
+  DEPARTMENT_HEAD
+  TEAM_LEAD
+  EMPLOYEE
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum LeaveRequestStatus {
+  PENDING
+  PENDING_L2
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ApprovalDecision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  HOLIDAY
+  REMOTE
+}
+
+enum AnnouncementScope {
+  GLOBAL
+  SUBSIDIARY
+}
+
+model Country {
+  id           String       @id @default(cuid())
+  name         String
+  code         String       @unique
+  subsidiaries Subsidiary[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Subsidiary {
+  id            String         @id @default(cuid())
+  name          String
+  city          String
+  timezone      String
+  currency      String
+  isActive      Boolean        @default(true)
+  countryId     String
+  country       Country        @relation(fields: [countryId], references: [id])
+  departments   Department[]
+  users         User[]
+  holidays      Holiday[]
+  announcements Announcement[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([countryId])
+}
+
+model Department {
+  id           String        @id @default(cuid())
+  name         String
+  subsidiaryId String
+  subsidiary   Subsidiary    @relation(fields: [subsidiaryId], references: [id])
+  designations Designation[]
+  users        User[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([subsidiaryId])
+}
+
+model Designation {
+  id           String     @id @default(cuid())
+  title        String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  users        User[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([departmentId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        RoleName @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  phone          String?
+  joiningDate    DateTime
+  status         EmploymentStatus @default(ACTIVE)
+  roleId         String
+  role           Role             @relation(fields: [roleId], references: [id])
+  subsidiaryId   String?
+  subsidiary     Subsidiary?      @relation(fields: [subsidiaryId], references: [id])
+  departmentId   String?
+  department     Department?      @relation(fields: [departmentId], references: [id])
+  designationId  String?
+  designation    Designation?     @relation(fields: [designationId], references: [id])
+  managerId      String?
+  manager        User?            @relation("ReportingLine", fields: [managerId], references: [id])
+  directReports  User[]           @relation("ReportingLine")
+  leaveBalances  LeaveBalance[]
+  leaveRequests  LeaveRequest[]   @relation("LeaveRequester")
+  approvals      LeaveApprovalStep[] @relation("LeaveApprover")
+  attendances    Attendance[]
+  notifications  Notification[]
+  announcements  Announcement[]   @relation("AnnouncementAuthor")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([subsidiaryId])
+  @@index([departmentId])
+  @@index([managerId])
+  @@index([roleId])
+  @@index([status])
+}
+
+model LeaveType {
+  id                      String         @id @default(cuid())
+  name                    String
+  code                    String         @unique
+  defaultAnnualQuota      Float
+  requiresEscalation      Boolean        @default(false)
+  escalationThresholdDays Int            @default(3)
+  isActive                Boolean        @default(true)
+  balances                LeaveBalance[]
+  requests                LeaveRequest[]
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+}
+
+model LeaveBalance {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  leaveTypeId String
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+  year        Int
+  allotted    Float
+  used        Float     @default(0)
+
+  @@unique([userId, leaveTypeId, year])
+  @@index([userId])
+}
+
+model LeaveRequest {
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation("LeaveRequester", fields: [userId], references: [id])
+  leaveTypeId        String
+  leaveType          LeaveType          @relation(fields: [leaveTypeId], references: [id])
+  startDate          DateTime
+  endDate            DateTime
+  totalDays          Float
+  reason             String
+  status             LeaveRequestStatus @default(PENDING)
+  currentApprovalStep Int               @default(1)
+  approvalSteps      LeaveApprovalStep[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([leaveTypeId])
+}
+
+model LeaveApprovalStep {
+  id             String           @id @default(cuid())
+  leaveRequestId String
+  leaveRequest   LeaveRequest     @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+  approverId     String
+  approver       User             @relation("LeaveApprover", fields: [approverId], references: [id])
+  level          Int
+  decision       ApprovalDecision @default(PENDING)
+  comment        String?
+  decidedAt      DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([leaveRequestId])
+  @@index([approverId])
+}
+
+model Holiday {
+  id           String     @id @default(cuid())
+  subsidiaryId String
+  subsidiary   Subsidiary @relation(fields: [subsidiaryId], references: [id])
+  name         String
+  date         DateTime
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([subsidiaryId])
+  @@index([date])
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  date      DateTime
+  status    AttendanceStatus @default(PRESENT)
+  note      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model Announcement {
+  id           String            @id @default(cuid())
+  title        String
+  body         String
+  scope        AnnouncementScope @default(GLOBAL)
+  subsidiaryId String?
+  subsidiary   Subsidiary?       @relation(fields: [subsidiaryId], references: [id])
+  createdById  String
+  createdBy    User              @relation("AnnouncementAuthor", fields: [createdById], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([subsidiaryId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
