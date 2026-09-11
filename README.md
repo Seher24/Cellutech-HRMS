@@ -1,155 +1,145 @@
 # Cellutech HRMS
 
-Cellutech HRMS is the internal people system for Cellutech subsidiaries. Use it to manage organization structure, employees, leave, attendance, holidays, policies, and operational reports from one place.
+Multi-subsidiary Human Resource Management System for Cellutech — organization structure, employees, leave approvals, attendance, holidays, policies, and reports in one role-based web app.
 
-Access is role based. What you see in the sidebar depends on your account. After you sign in, start from the dashboard and open the module you need from the left navigation (or the menu on smaller screens).
+**Production:** [https://cellutech-hrms.vercel.app](https://cellutech-hrms.vercel.app)
 
-## Getting started
+Made by Seher Siddique for Cellutech.
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js App Router (TypeScript) |
+| UI | Tailwind CSS + shadcn/ui |
+| Charts | Recharts |
+| Database | PostgreSQL (Neon in production; Prisma ORM) |
+| Auth | Auth.js (NextAuth v5) + JWT sessions + bcrypt |
+| Forms | React Hook Form + Zod |
+| Hosting | Vercel |
+
+## Getting started (local)
 
 1. Clone the repository and open the project folder.
-2. Copy `.env.example` to `.env` and set `AUTH_SECRET` to a long random value.
-3. Install dependencies, apply migrations, and start the app:
+2. Copy `.env.example` to `.env` and fill in values (see below).
+3. Install, migrate, seed, and run:
 
 ```bash
 npm install
 npx prisma migrate deploy
+npm run db:seed
 npm run dev
 ```
 
-On Windows you can also run `start.bat` or `.\start.ps1` from the project root. Those scripts prepare the environment and launch the development server.
+On Windows you can also run `.\start.ps1` (or `start.bat`) from the project root.
 
-Open [http://localhost:3000](http://localhost:3000) and sign in with the account issued by your administrator.
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Environment variables
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | Prisma database connection (SQLite file path by default) |
-| `AUTH_SECRET` | Secret used to sign session tokens |
-| `AUTH_TRUST_HOST` | Set to `true` for local development |
-| `NEXTAUTH_URL` | Public URL of the app (for example `http://localhost:3000`) |
+| `DATABASE_URL` | Postgres pooled connection string (app runtime) |
+| `DATABASE_URL_UNPOOLED` | Postgres direct URL (Prisma migrate) |
+| `AUTH_SECRET` | Long random secret used to sign session tokens |
+| `AUTH_TRUST_HOST` | Set to `true` (required behind Vercel / proxies) |
+| `AUTH_URL` | Public site URL in production (e.g. `https://cellutech-hrms.vercel.app`) |
+| `NEXTAUTH_URL` | Same public URL locally or in production |
 
-SQLite is the default database. To use MySQL later, change the Prisma `provider` and point `DATABASE_URL` at your MySQL instance.
+Generate a secret:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Demo users are created by the seed script. On Windows, `start.ps1` prints sample emails after seeding. Ask your administrator for credentials in shared environments — do not commit real passwords.
 
 ## Signing in and navigating
 
-Use the login page with your company email and password. Once inside:
+Use your Cellutech work email (`@cellutechfzco.com`) and password. Navigation is role-aware (sidebar on desktop, menu on mobile).
 
-- **Dashboard** shows metrics and charts for your role.
-- **My Profile** lets you review and update your personal details.
-- **Notifications** lists leave and approval alerts. Unread counts appear in the header.
-- Use **Sign out** in the header when you finish.
+- **Dashboard** — live metrics and charts for your role  
+- **My Profile** — personal details and password change  
+- **Notifications** — leave and approval alerts  
 
-On phones and tablets, open the menu button in the header to reach the same sections.
+## Features
 
-## Organization and employees
+### Organization and employees
 
-### Organization
+- Companies, countries, subsidiaries, departments, and designations  
+- Employee directory with search/filters; create, edit, soft-deactivate / reactivate  
+- Manager assignment and org chart (subsidiary or global for Super Admin)  
+- Employee document uploads (type/size validated)  
 
-Super Admin and HR can open **Organization** to maintain companies, countries, subsidiaries, and departments. Keep subsidiaries active only while they are operational. Deactivated subsidiaries stay in history but should not be used for new hiring.
+### Leave
 
-### Employees
+- Configurable leave types and balances (seeded; balances auto-created when missing)  
+- Request leave with working-day calc (weekends + subsidiary holidays excluded)  
+- Level-1 manager approval → optional Level-2 department head escalation  
+- Subsidiary HR override; cancel pending / future approved requests  
+- **Leave Calendar** — managers, department heads, HR, and Super Admin only (coverage / overlaps)  
 
-Open **Employees** to search the directory, filter by status, and open a profile.
+### Attendance and holidays
 
-HR and Super Admin can onboard a new person from this page: name, email, role, subsidiary, department, designation, manager, and joining date. Profiles support soft deactivation when someone leaves.
+- Daily status (present / absent / leave / holiday / remote)  
+- Check-in / check-out timesheet punches  
+- Per-subsidiary holiday calendars used in leave calculations  
 
-On an employee profile you can upload documents such as contracts or ID copies. Files are type and size checked before storage.
+### Policies, announcements, reports
 
-### Org chart
+- Policy document vault (global or subsidiary scope)  
+- Announcements (global or subsidiary)  
+- CSV and PDF exports: headcount, leave, attendance  
 
-**Org Chart** shows the reporting tree for your subsidiary. Super Admin can switch to a global view across subsidiaries when needed.
-
-## Leave
-
-### Request leave
-
-Employees open **Request Leave**, choose the leave type and dates, and submit a reason. Working days exclude weekends and subsidiary holidays. The system checks your remaining balance before accepting the request.
-
-### My leave
-
-**My Leave** lists your requests and their approval trail. You can cancel a pending request, or an approved request that has not started yet. Cancelling an approved future request restores balance.
-
-### Approvals
-
-Managers and department heads open **Approvals** to review items in their queue. Typical path:
-
-1. Direct manager decides at Level 1.
-2. Longer or escalated leave moves to the department head at Level 2.
-3. Subsidiary HR can override within their own subsidiary when policy requires it.
-
-Each decision is stored with optional comments for audit.
-
-### Leave calendar
-
-**Leave Calendar** shows approved leave so teams can spot coverage gaps and overlaps before planning time off.
-
-## Attendance and holidays
-
-### Attendance
-
-**Attendance** is for daily status and timesheet punches. Check in when you start work and check out when you finish. You can also mark the day as present, remote, leave, holiday, or absent. Managers and HR see records in their scope; Finance can review subsidiary attendance for payroll inputs.
-
-### Holidays
-
-**Holidays** lists public holidays for a subsidiary. HR configures these dates so leave calculations skip them automatically.
-
-## Policies, announcements, and reports
-
-### Policies
-
-**Policies** is the document vault for handbooks and HR policies. Everyone can download published files. Admin and HR upload or remove documents and choose global or subsidiary scope.
-
-### Announcements
-
-Admin and HR publish announcements under **Announcements**. Posts can be global or limited to one subsidiary. Existing posts can be edited or removed.
-
-### Reports
-
-Roles with export access open **Reports** to download headcount, leave, and attendance as CSV or PDF. Exports follow the same subsidiary and role scope as the rest of the app.
-
-## Roles at a glance
+## Roles
 
 | Role | Typical use |
 |------|-------------|
-| Super Admin | Full organization setup, global views, overrides |
+| Super Admin | Full setup, global views, overrides |
 | HR Manager | Subsidiary employees, holidays, announcements, HR leave override |
-| Department Head | Escalated leave approval and department oversight |
-| Team Lead / Line Manager | Direct report leave approval and team view |
-| Employee | Own profile, leave requests, attendance punches |
-| Finance | View subsidiary headcount, attendance, and report exports |
+| Department Head | Escalated leave and department oversight |
+| Team Lead | Direct-report leave approval and team views |
+| Employee | Own profile, leave, attendance |
+| Finance | View-only headcount / attendance / report exports |
 
-Exact menu items and actions follow the permission matrix in the application. If a page is missing from your sidebar, your role is not meant to manage that area.
+## Production (Vercel + Neon)
 
-## Day to day tips
+Required Vercel environment variables (Production):
 
-- Prefer the dashboard first thing in the morning for pending leave and headcount signals.
-- Confirm holidays for your subsidiary before planning long leave.
-- Keep manager assignments current so leave routes to the right approver.
-- Use notifications instead of email threads for approval status.
-- Download reports at month end for payroll and compliance archives.
+- `DATABASE_URL`, `DATABASE_URL_UNPOOLED`  
+- `AUTH_SECRET`, `AUTH_TRUST_HOST=true`  
+- `AUTH_URL` and `NEXTAUTH_URL` = `https://cellutech-hrms.vercel.app`  
+
+Build runs `prisma migrate deploy && next build`. After changing env vars, redeploy.
+
+Health check: [https://cellutech-hrms.vercel.app/api/health](https://cellutech-hrms.vercel.app/api/health)
+
+**Note:** Employee/policy file uploads use the local filesystem. On Vercel this storage is ephemeral — use object storage (e.g. Vercel Blob / S3) for durable files in production.
 
 ## Development scripts
 
 | Command | What it does |
 |---------|----------------|
-| `npm run dev` | Start the development server |
-| `npm run build` | Create a production build |
-| `npm run db:seed` | Load seed data into the database |
-| `npm run db:reset` | Reset the database, migrate, and seed |
+| `npm run dev` | Development server |
+| `npm run build` | Migrate + production build |
+| `npm run db:seed` | Seed demo data |
+| `npm run db:deploy` | Apply migrations |
+| `npm run db:reset` | Reset DB, migrate, seed |
 
 ## Project layout
 
 ```
-src/app/(app)/     Authenticated application pages
+src/app/(app)/     Authenticated pages
 src/app/(auth)/    Login
 src/lib/           Auth, RBAC, leave workflow, org helpers
 prisma/            Schema, migrations, seed
-public/            Static assets including branding
+public/            Branding assets
 ```
+
+## SRS alignment
+
+Built against *HRMS SRS NextJS 2026*. Mandatory assignment scope (§9.1) and should-include items (§9.2) are implemented. See `RELEASE_NOTES.md` for the v1.0 feature list and known limitations.
 
 ## Support
 
-For access issues, role changes, or data corrections, contact your Cellutech HR administrator. Application defects and enhancement requests should go through your internal engineering channel.
-
-Made by Seher Siddique for Cellutech.
+Access and role issues: Cellutech HR. Defects and enhancements: internal engineering channel.
