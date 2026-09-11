@@ -317,3 +317,33 @@ export async function deleteAnnouncementAction(id: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function updateAnnouncementAction(input: {
+  id: string;
+  title: string;
+  body: string;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_announcements");
+
+  const item = await prisma.announcement.findUnique({ where: { id: input.id } });
+  if (!item) return { error: "Not found" };
+  if (
+    item.scope === "SUBSIDIARY" &&
+    !canAccessSubsidiary(actor, item.subsidiaryId)
+  ) {
+    return { error: "Forbidden" };
+  }
+  if (item.scope === "GLOBAL" && actor.role !== RoleName.SUPER_ADMIN) {
+    return { error: "Only Super Admin can edit global announcements" };
+  }
+
+  await prisma.announcement.update({
+    where: { id: input.id },
+    data: { title: input.title, body: input.body },
+  });
+
+  revalidatePath("/announcements");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

@@ -1,11 +1,15 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createAnnouncementAction, deleteAnnouncementAction } from "@/lib/actions/hr";
+import {
+  createAnnouncementAction,
+  deleteAnnouncementAction,
+  updateAnnouncementAction,
+} from "@/lib/actions/hr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +45,10 @@ export function AnnouncementManager({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -114,30 +122,84 @@ export function AnnouncementManager({
       <div className="space-y-3">
         {items.map((item) => (
           <div key={item.id} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h4 className="font-semibold text-slate-900">{item.title}</h4>
-                <p className="text-xs text-slate-500">
-                  {item.scope}
-                  {item.subsidiaryName ? ` / ${item.subsidiaryName}` : ""} · {item.author} ·{" "}
-                  {item.createdAt}
-                </p>
+            {editingId === item.id ? (
+              <div className="space-y-3">
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                <Textarea
+                  rows={4}
+                  value={editBody}
+                  onChange={(e) => setEditBody(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-teal-700 hover:bg-teal-800"
+                    disabled={pending}
+                    onClick={() => {
+                      startTransition(async () => {
+                        await updateAnnouncementAction({
+                          id: item.id,
+                          title: editTitle,
+                          body: editBody,
+                        });
+                        setEditingId(null);
+                        router.refresh();
+                      });
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                disabled={pending}
-                onClick={() => {
-                  startTransition(async () => {
-                    await deleteAnnouncementAction(item.id);
-                    router.refresh();
-                  });
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-            <p className="mt-2 text-sm text-slate-700">{item.body}</p>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                    <p className="text-xs text-slate-500">
+                      {item.scope}
+                      {item.subsidiaryName ? ` / ${item.subsidiaryName}` : ""} · {item.author} ·{" "}
+                      {item.createdAt}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={pending}
+                      onClick={() => {
+                        setEditingId(item.id);
+                        setEditTitle(item.title);
+                        setEditBody(item.body);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={pending}
+                      onClick={() => {
+                        startTransition(async () => {
+                          await deleteAnnouncementAction(item.id);
+                          router.refresh();
+                        });
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-slate-700">{item.body}</p>
+              </>
+            )}
           </div>
         ))}
       </div>
