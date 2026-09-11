@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CancelLeaveButton } from "@/components/leave/cancel-leave-button";
 
 export default async function MyLeavePage() {
   const session = await auth();
@@ -51,7 +52,10 @@ export default async function MyLeavePage() {
                   {r.totalDays} day(s)
                 </p>
               </div>
-              <Badge variant="secondary">{r.status}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{r.status}</Badge>
+                <CancelLeaveButton requestId={r.id} status={r.status} />
+              </div>
             </div>
             <p className="mt-2 text-sm text-slate-700">{r.reason}</p>
             <div className="mt-4 space-y-2 border-t border-slate-100 pt-3">

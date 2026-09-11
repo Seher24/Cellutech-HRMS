@@ -375,3 +375,80 @@ export async function getPendingApprovalsFor(actor: SessionUser) {
     orderBy: { createdAt: "asc" },
   });
 }
+
+export async function cancelLeaveRequest(input: {
+  actor: SessionUser;
+  requestId: string;
+}) {
+  const request = await prisma.leaveRequest.findUnique({
+    where: { id: input.requestId },
+    include: { leaveType: true, approvalSteps: true },
+  });
+
+  if (!request) throw new Error("Leave request not found");
+  if (request.userId !== input.actor.id) {
+    throw new Error("You can only cancel your own leave requests");
+  }
+
+  const cancellable =
+    request.status === LeaveRequestStatus.PENDING ||
+    request.status === LeaveRequestStatus.PENDING_L2 ||
+    request.status === LeaveRequestStatus.APPROVED;
+
+  if (!cancellable) {
+    throw new Error("This leave request cannot be cancelled");
+  }
+
+  if (request.status === LeaveRequestStatus.APPROVED) {
+    const today = startOfDay(new Date());
+    if (startOfDay(request.startDate) <= today) {
+      throw new Error("Cannot cancel leave that has already started");
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.leaveRequest.update({
+      where: { id: request.id },
+      data: { status: LeaveRequestStatus.CANCELLED },
+    });
+
+    await tx.leaveApprovalStep.updateMany({
+      where: {
+        leaveRequestId: request.id,
+        decision: ApprovalDecision.PENDING,
+      },
+      data: {
+        decision: ApprovalDecision.REJECTED,
+        comment: "Cancelled by employee",
+        decidedAt: new Date(),
+      },
+    });
+
+    if (request.status === LeaveRequestStatus.APPROVED) {
+      const year = request.startDate.getFullYear();
+      await tx.leaveBalance.update({
+        where: {
+          userId_leaveTypeId_year: {
+            userId: request.userId,
+            leaveTypeId: request.leaveTypeId,
+            year,
+          },
+        },
+        data: { used: { decrement: request.totalDays } },
+      });
+    }
+  });
+
+  const pendingApprovers = request.approvalSteps
+    .filter((s) => s.decision === ApprovalDecision.PENDING)
+    .map((s) => s.approverId);
+
+  for (const approverId of pendingApprovers) {
+    await notify(
+      approverId,
+      "Leave cancelled",
+      `A leave request was withdrawn by the employee.`,
+      "/leave/approvals"
+    );
+  }
+}

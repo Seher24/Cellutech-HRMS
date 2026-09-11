@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth";
-import { decideLeaveRequest, submitLeaveRequest } from "@/lib/leave/workflow";
+import { decideLeaveRequest, submitLeaveRequest, cancelLeaveRequest } from "@/lib/leave/workflow";
 
 const leaveSchema = z.object({
   leaveTypeId: z.string().min(1),
@@ -61,5 +61,20 @@ export async function decideLeaveAction(input: {
     return { success: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Decision failed" };
+  }
+}
+
+export async function cancelLeaveAction(requestId: string) {
+  const actor = await requireSession();
+  try {
+    await cancelLeaveRequest({ actor, requestId });
+    revalidatePath("/leave");
+    revalidatePath("/dashboard");
+    revalidatePath("/leave/my-requests");
+    revalidatePath("/leave/approvals");
+    revalidatePath("/leave/calendar");
+    return { success: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Cancel failed" };
   }
 }
