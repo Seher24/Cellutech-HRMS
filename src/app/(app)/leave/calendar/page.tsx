@@ -1,7 +1,17 @@
+import { RoleName } from "@prisma/client";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { redirect } from "next/navigation";
-import { RoleName } from "@prisma/client";
+import { LeaveOverlapCalendar } from "@/components/leave/leave-overlap-calendar";
+
+function rangesOverlap(
+  aStart: Date,
+  aEnd: Date,
+  bStart: Date,
+  bEnd: Date
+) {
+  return aStart <= bEnd && bStart <= aEnd;
+}
 
 export default async function LeaveCalendarPage() {
   const session = await auth();
@@ -33,7 +43,28 @@ export default async function LeaveCalendarPage() {
       leaveType: true,
     },
     orderBy: { startDate: "asc" },
-    take: 50,
+    take: 80,
+  });
+
+  const items = leaves.map((l) => {
+    const overlapsWith = leaves
+      .filter(
+        (other) =>
+          other.id !== l.id &&
+          rangesOverlap(l.startDate, l.endDate, other.startDate, other.endDate)
+      )
+      .map((other) => `${other.user.firstName} ${other.user.lastName}`);
+
+    return {
+      id: l.id,
+      employee: `${l.user.firstName} ${l.user.lastName}`,
+      department: l.user.department?.name ?? "-",
+      leaveType: l.leaveType.name,
+      startDate: l.startDate.toISOString().slice(0, 10),
+      endDate: l.endDate.toISOString().slice(0, 10),
+      totalDays: l.totalDays,
+      overlapsWith,
+    };
   });
 
   return (
@@ -41,44 +72,10 @@ export default async function LeaveCalendarPage() {
       <div>
         <h2 className="text-2xl font-semibold text-slate-900">Leave calendar</h2>
         <p className="text-sm text-slate-500">
-          Approved leave in your scope - use this to plan coverage
+          Approved leave in your scope with overlap highlighting for coverage planning
         </p>
       </div>
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Employee</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Dates</th>
-              <th className="px-4 py-3">Days</th>
-              <th className="px-4 py-3">Department</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaves.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
-                  No approved leave in this view.
-                </td>
-              </tr>
-            )}
-            {leaves.map((l) => (
-              <tr key={l.id} className="border-b border-slate-100">
-                <td className="px-4 py-3 font-medium">
-                  {l.user.firstName} {l.user.lastName}
-                </td>
-                <td className="px-4 py-3">{l.leaveType.name}</td>
-                <td className="px-4 py-3">
-                  {l.startDate.toLocaleDateString()} - {l.endDate.toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3">{l.totalDays}</td>
-                <td className="px-4 py-3">{l.user.department?.name ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <LeaveOverlapCalendar items={items} />
     </div>
   );
 }
