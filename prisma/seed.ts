@@ -7,6 +7,7 @@ const PASSWORD = "Password123!";
 
 async function main() {
   await prisma.notification.deleteMany();
+  await prisma.employeeDocument.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.attendance.deleteMany();
   await prisma.leaveApprovalStep.deleteMany();

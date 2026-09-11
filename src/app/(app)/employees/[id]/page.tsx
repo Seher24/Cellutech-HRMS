@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { canAccessSubsidiary, hasPermission } from "@/lib/rbac";
 import { Badge } from "@/components/ui/badge";
 import { DeactivateEmployeeButton } from "@/components/employees/deactivate-button";
+import { EmployeeDocumentsPanel } from "@/components/employees/employee-documents";
 import { getManagerChain } from "@/lib/org/hierarchy";
 
 export default async function EmployeeDetailPage({
@@ -23,6 +24,7 @@ export default async function EmployeeDetailPage({
       department: true,
       designation: true,
       manager: true,
+      documents: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -48,6 +50,7 @@ export default async function EmployeeDetailPage({
   }
 
   const chain = await getManagerChain(employee.id);
+  const canUpload = isSelf || canManage;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -120,6 +123,18 @@ export default async function EmployeeDetailPage({
           ))}
         </ol>
       </div>
+      <EmployeeDocumentsPanel
+        userId={employee.id}
+        canUpload={canUpload}
+        documents={employee.documents.map((d) => ({
+          id: d.id,
+          title: d.title,
+          category: d.category,
+          fileName: d.fileName,
+          sizeBytes: d.sizeBytes,
+          createdAt: d.createdAt.toLocaleString(),
+        }))}
+      />
     </div>
   );
 }
