@@ -597,6 +597,7 @@ async function main() {
   });
 
   const allEmployees = [
+    admin,
     hrKarachi,
     hrLahore,
     engHead,

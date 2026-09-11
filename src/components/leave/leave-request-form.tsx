@@ -62,9 +62,12 @@ export function LeaveRequestForm({ leaveTypes }: { leaveTypes: LeaveTypeOption[]
         <Label htmlFor="leaveTypeId">Leave type</Label>
         <select
           id="leaveTypeId"
-          className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+          className="relative z-10 flex h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
           {...register("leaveTypeId")}
         >
+          <option value="" disabled>
+            Select leave type
+          </option>
           {leaveTypes.map((lt) => (
             <option key={lt.id} value={lt.id}>
               {lt.name} ({lt.remaining} remaining)
