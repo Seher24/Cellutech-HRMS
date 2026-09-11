@@ -33,7 +33,7 @@ export default async function OrgChartPage({
           <p className="text-sm text-slate-500">
             {isGlobal
               ? "Consolidated global reporting hierarchy across all subsidiaries"
-              : "Reporting hierarchy driven by each employee's manager"}
+              : "Reporting hierarchy driven by each employee manager"}
           </p>
         </div>
         {isSuperAdmin && (

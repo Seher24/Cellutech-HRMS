@@ -251,15 +251,15 @@ This installs deps if needed, migrates, seeds, and runs http://localhost:3000.
 |---------|-------|--------|-------|
 | 3.1 | Auth and access control | **Met** | bcrypt, RBAC, middleware, role nav |
 | 3.2 | Org / subsidiary / dept management | **Met** | `/organization` create flows |
-| 3.3 | Employee lifecycle | **Mostly met** | Onboard, profile, deactivate; no file attachments |
-| 3.4 | Reporting hierarchy and org chart | **Mostly met** | Per-subsidiary chart; manager chain |
-| 3.5 | Leave management | **Met (core)** | Multi-level, balances, audit; calendar is list-based |
+| 3.3 | Employee lifecycle | **Met** | Onboard, profile, deactivate, document uploads |
+| 3.4 | Reporting hierarchy and org chart | **Met** | Per-subsidiary + Super Admin global chart; manager chain |
+| 3.5 | Leave management | **Met** | Multi-level, balances, audit, overlap timeline calendar |
 | 3.6 | Holiday calendar | **Met** | Per subsidiary + leave day exclusion |
-| 3.7 | Attendance and timesheet | **Partially met** | Daily status; not full timesheet hours |
+| 3.7 | Attendance and timesheet | **Mostly met** | Daily status; not full hourly timesheet |
 | 3.8 | Role-based dashboards | **Met** | Live widgets |
-| 3.9 | Notifications and announcements | **Mostly met** | Leave notifications + seeded announcements (read); no full announcement CRUD UI |
-| 3.10 | Document and asset management | **Not built** | Deferred in README |
-| 3.11 | Reports and exports CSV/PDF | **Not built** | Deferred in README |
+| 3.9 | Notifications and announcements | **Met** | Leave notifications + Admin/HR announcement CRUD |
+| 3.10 | Document and asset management | **Met** | Employee document upload/download with validation |
+| 3.11 | Reports and exports CSV/PDF | **Mostly met** | CSV exports for headcount/leave/attendance; PDF deferred |
 
 ### Tech stack (§1.6)
 
@@ -271,7 +271,7 @@ This installs deps if needed, migrates, seeds, and runs http://localhost:3000.
 | SQLite + Prisma | **Met** |
 | Auth.js with role sessions | **Met** |
 | Zod validation | **Met** |
-| React Hook Form | **Partial** | Package present; forms mainly FormData + Zod on server |
+| React Hook Form | **Met** | Login, leave, onboarding, profile, announcements use RHF + Zod |
 | Server Components / Server Actions | **Met** |
 
 ### UI screens (§8.2)
@@ -330,17 +330,13 @@ A: Seher Siddique, Super Admin, `seher.siddique@hrms.pk`.
 
 ## 14. Honest limitations (say this confidently)
 
-If asked what is incomplete versus the full vision SRS:
+If asked what remains thinner versus the full vision SRS:
 
-1. No employee document uploads (§3.10)  
-2. No CSV/PDF report exports (§3.11)  
-3. Attendance is status-based, not hourly timesheet  
-4. Announcements are displayed/seeded; Admin create UI is thin/absent  
-5. Leave "calendar" is an approved-leave list, not a full visual overlap calendar  
-6. React Hook Form is not used on every form (Zod + Server Actions are)  
+1. Attendance is daily status, not a full hourly timesheet  
+2. Report exports are CSV (PDF generation not built)  
+3. Document storage is local filesystem (fine for demo; S3-style storage for production)  
 
-These do **not** block the mandatory assignment criteria (§9.1-9.2, §9.5).
-
+Mandatory assignment criteria (§9.1-9.2, §9.5) are met.
 ---
 
 ## 15. Cheat sheet - files to open during oral review
