@@ -15,7 +15,10 @@ export async function loginAction(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Invalid email or password" };
+      if (error.type === "CredentialsSignin") {
+        return { error: "Invalid email or password" };
+      }
+      return { error: "Sign-in temporarily unavailable. Please try again." };
     }
     throw error;
   }
