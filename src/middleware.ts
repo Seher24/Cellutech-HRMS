@@ -6,16 +6,11 @@ const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
+  // req.auth can be an error object when AUTH_SECRET is missing — only trust a real user
+  const isLoggedIn = Boolean(req.auth && "user" in req.auth && req.auth.user);
   const isAuthPage = pathname.startsWith("/login");
-  const isPublic =
-    isAuthPage ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/health") ||
-    pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico";
 
-  if (!isLoggedIn && !isPublic) {
+  if (!isLoggedIn && !isAuthPage) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("callbackUrl", pathname);
@@ -31,6 +26,9 @@ export default auth((req) => {
   return NextResponse.next();
 });
 
+// Do NOT run auth middleware on auth/health APIs — MissingSecret would break them
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.png$).*)"],
+  matcher: [
+    "/((?!api/auth|api/health|_next/static|_next/image|favicon.ico|.*\\.png$).*)",
+  ],
 };
