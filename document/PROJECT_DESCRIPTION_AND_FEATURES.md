@@ -139,7 +139,18 @@ Live charts and metrics from the database:
 ### 9. Notifications and announcements
 
 - In-app notifications for leave submission, escalation, approval, and rejection  
-- Company / subsidiary announcements shown on dashboards (seeded and readable)  
+- Admin/HR can create and delete global or subsidiary announcements  
+
+### 10. Employee documents
+
+- Upload contracts, IDs, and other files on employee profiles  
+- Type/size validation (PDF, Word, JPG, PNG up to 5MB)  
+- Download and delete with role-scoped access  
+
+### 11. Reports and exports
+
+- CSV downloads for headcount, leave summary, and attendance  
+- Scoped to Super Admin (global) or HR/Department Head (subsidiary/department)  
 
 ---
 
