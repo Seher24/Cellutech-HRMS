@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { RoleName } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { authConfig } from "@/lib/auth.config";
 import type { SessionUser } from "@/lib/rbac";
 
 declare module "next-auth" {
@@ -27,12 +28,7 @@ declare module "@auth/core/jwt" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  trustHost: true,
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       name: "Credentials",
@@ -66,29 +62,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id!;
-        token.role = user.role;
-        token.subsidiaryId = user.subsidiaryId;
-        token.departmentId = user.departmentId;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      const user: SessionUser = {
-        id: (token.id as string) ?? "",
-        email: session.user.email!,
-        name: session.user.name ?? "",
-        role: token.role as RoleName,
-        subsidiaryId: (token.subsidiaryId as string | null) ?? null,
-        departmentId: (token.departmentId as string | null) ?? null,
-      };
-      session.user = user as typeof session.user;
-      return session;
-    },
-  },
 });
 
 export async function requireSession() {
