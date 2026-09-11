@@ -256,3 +256,64 @@ export async function markNotificationsReadAction() {
   revalidatePath("/");
   return { success: true };
 }
+
+export async function createAnnouncementAction(input: {
+  title: string;
+  body: string;
+  scope: "GLOBAL" | "SUBSIDIARY";
+  subsidiaryId?: string;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_announcements");
+
+  if (input.scope === "GLOBAL" && actor.role !== RoleName.SUPER_ADMIN) {
+    return { error: "Only Super Admin can post global announcements" };
+  }
+
+  const subsidiaryId =
+    input.scope === "SUBSIDIARY"
+      ? input.subsidiaryId || actor.subsidiaryId
+      : null;
+
+  if (input.scope === "SUBSIDIARY") {
+    if (!subsidiaryId || !canAccessSubsidiary(actor, subsidiaryId)) {
+      return { error: "Forbidden: subsidiary scope" };
+    }
+  }
+
+  await prisma.announcement.create({
+    data: {
+      title: input.title,
+      body: input.body,
+      scope: input.scope,
+      subsidiaryId,
+      createdById: actor.id,
+    },
+  });
+
+  revalidatePath("/announcements");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteAnnouncementAction(id: string) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_announcements");
+
+  const item = await prisma.announcement.findUnique({ where: { id } });
+  if (!item) return { error: "Not found" };
+  if (
+    item.scope === "SUBSIDIARY" &&
+    !canAccessSubsidiary(actor, item.subsidiaryId)
+  ) {
+    return { error: "Forbidden" };
+  }
+  if (item.scope === "GLOBAL" && actor.role !== RoleName.SUPER_ADMIN) {
+    return { error: "Only Super Admin can delete global announcements" };
+  }
+
+  await prisma.announcement.delete({ where: { id } });
+  revalidatePath("/announcements");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
