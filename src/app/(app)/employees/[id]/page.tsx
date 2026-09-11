@@ -1,10 +1,12 @@
 import { notFound, redirect } from "next/navigation";
+import { RoleName } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canAccessSubsidiary, hasPermission } from "@/lib/rbac";
 import { Badge } from "@/components/ui/badge";
 import { DeactivateEmployeeButton } from "@/components/employees/deactivate-button";
 import { EmployeeDocumentsPanel } from "@/components/employees/employee-documents";
+import { EmployeeEditForm } from "@/components/employees/employee-edit-form";
 import { getManagerChain } from "@/lib/org/hierarchy";
 
 export default async function EmployeeDetailPage({
@@ -52,6 +54,36 @@ export default async function EmployeeDetailPage({
   const chain = await getManagerChain(employee.id);
   const canUpload = isSelf || canManage;
 
+  const [subsidiaries, departments, designations, managers, roles] = canManage
+    ? await Promise.all([
+        prisma.subsidiary.findMany({
+          where:
+            session.user.role === RoleName.SUPER_ADMIN
+              ? {}
+              : { id: session.user.subsidiaryId ?? undefined },
+        }),
+        prisma.department.findMany({
+          where:
+            session.user.role === RoleName.SUPER_ADMIN
+              ? {}
+              : { subsidiaryId: session.user.subsidiaryId ?? undefined },
+        }),
+        prisma.designation.findMany(),
+        prisma.user.findMany({
+          where: {
+            status: "ACTIVE",
+            id: { not: employee.id },
+            ...(session.user.role === RoleName.SUPER_ADMIN
+              ? {}
+              : { subsidiaryId: session.user.subsidiaryId }),
+          },
+          select: { id: true, firstName: true, lastName: true },
+          orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+        }),
+        prisma.role.findMany({ orderBy: { name: "asc" } }),
+      ])
+    : [[], [], [], [], []];
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
@@ -64,7 +96,7 @@ export default async function EmployeeDetailPage({
           </div>
           <Badge variant="secondary">{employee.status}</Badge>
         </div>
-        <dl className="mt-6 grid gap-4 sm:grid-cols-2 text-sm">
+        <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-slate-500">Role</dt>
             <dd className="font-medium">{employee.role.name.replaceAll("_", " ")}</dd>
@@ -110,6 +142,54 @@ export default async function EmployeeDetailPage({
           </div>
         )}
       </div>
+
+      {canManage && employee.subsidiaryId && employee.departmentId && (
+        <EmployeeEditForm
+          employee={{
+            id: employee.id,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            email: employee.email,
+            phone: employee.phone ?? "",
+            roleName: employee.role.name as
+              | "SUPER_ADMIN"
+              | "HR_MANAGER"
+              | "DEPARTMENT_HEAD"
+              | "TEAM_LEAD"
+              | "EMPLOYEE"
+              | "FINANCE",
+            subsidiaryId: employee.subsidiaryId,
+            departmentId: employee.departmentId,
+            designationId: employee.designationId ?? "",
+            managerId: employee.managerId ?? "",
+            joiningDate: employee.joiningDate.toISOString().slice(0, 10),
+            status: employee.status as "ACTIVE" | "ON_LEAVE" | "TERMINATED",
+          }}
+          subsidiaries={subsidiaries.map((s) => ({ id: s.id, name: s.name }))}
+          departments={departments.map((d) => ({
+            id: d.id,
+            name: d.name,
+            subsidiaryId: d.subsidiaryId,
+          }))}
+          designations={designations.map((d) => ({
+            id: d.id,
+            title: d.title,
+            departmentId: d.departmentId,
+          }))}
+          managers={managers.map((m) => ({
+            id: m.id,
+            name: `${m.firstName} ${m.lastName}`,
+          }))}
+          roles={roles
+            .filter((r) =>
+              session.user.role === RoleName.SUPER_ADMIN
+                ? true
+                : r.name !== RoleName.SUPER_ADMIN
+            )
+            .map((r) => ({ name: r.name, label: r.name.replaceAll("_", " ") }))}
+        />
+      )}
+
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h3 className="font-semibold text-slate-900">Manager chain</h3>
         <ol className="mt-3 space-y-2 text-sm">

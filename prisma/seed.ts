@@ -251,7 +251,7 @@ async function main() {
   }
 
   const admin = await createUser({
-    email: "seher.siddique@hrms.pk",
+    email: "seher.siddique@cellutechfzco.com",
     firstName: "Seher",
     lastName: "Siddique",
     role: RoleName.SUPER_ADMIN,
@@ -260,7 +260,7 @@ async function main() {
   });
 
   const hrKarachi = await createUser({
-    email: "hr.karachi@hrms.pk",
+    email: "hr.karachi@cellutechfzco.com",
     firstName: "Fatima",
     lastName: "Ali",
     role: RoleName.HR_MANAGER,
@@ -272,7 +272,7 @@ async function main() {
   });
 
   const hrLahore = await createUser({
-    email: "hr.lahore@hrms.pk",
+    email: "hr.lahore@cellutechfzco.com",
     firstName: "Sana",
     lastName: "Qureshi",
     role: RoleName.HR_MANAGER,
@@ -284,7 +284,7 @@ async function main() {
   });
 
   const engHead = await createUser({
-    email: "head.eng@hrms.pk",
+    email: "head.eng@cellutechfzco.com",
     firstName: "Ahmed",
     lastName: "Khan",
     role: RoleName.DEPARTMENT_HEAD,
@@ -297,7 +297,7 @@ async function main() {
   });
 
   const salesHead = await createUser({
-    email: "head.sales@hrms.pk",
+    email: "head.sales@cellutechfzco.com",
     firstName: "Ayesha",
     lastName: "Malik",
     role: RoleName.DEPARTMENT_HEAD,
@@ -310,7 +310,7 @@ async function main() {
   });
 
   const teamLead = await createUser({
-    email: "lead.eng@hrms.pk",
+    email: "lead.eng@cellutechfzco.com",
     firstName: "Bilal",
     lastName: "Hussain",
     role: RoleName.TEAM_LEAD,
@@ -323,7 +323,7 @@ async function main() {
   });
 
   const emp1 = await createUser({
-    email: "usman.raza@hrms.pk",
+    email: "usman.raza@cellutechfzco.com",
     firstName: "Usman",
     lastName: "Raza",
     role: RoleName.EMPLOYEE,
@@ -336,7 +336,7 @@ async function main() {
   });
 
   const emp2 = await createUser({
-    email: "sara.sheikh@hrms.pk",
+    email: "sara.sheikh@cellutechfzco.com",
     firstName: "Sara",
     lastName: "Sheikh",
     role: RoleName.EMPLOYEE,
@@ -349,7 +349,7 @@ async function main() {
   });
 
   const emp3 = await createUser({
-    email: "hamza.iqbal@hrms.pk",
+    email: "hamza.iqbal@cellutechfzco.com",
     firstName: "Hamza",
     lastName: "Iqbal",
     role: RoleName.EMPLOYEE,
@@ -362,7 +362,7 @@ async function main() {
   });
 
   const engQa = await createUser({
-    email: "mehwish.tariq@hrms.pk",
+    email: "mehwish.tariq@cellutechfzco.com",
     firstName: "Mehwish",
     lastName: "Tariq",
     role: RoleName.EMPLOYEE,
@@ -375,7 +375,7 @@ async function main() {
   });
 
   const engJunior = await createUser({
-    email: "danish.akhtar@hrms.pk",
+    email: "danish.akhtar@cellutechfzco.com",
     firstName: "Danish",
     lastName: "Akhtar",
     role: RoleName.EMPLOYEE,
@@ -388,7 +388,7 @@ async function main() {
   });
 
   const salesExec2 = await createUser({
-    email: "noor.fatima@hrms.pk",
+    email: "noor.fatima@cellutechfzco.com",
     firstName: "Noor",
     lastName: "Fatima",
     role: RoleName.EMPLOYEE,
@@ -401,7 +401,7 @@ async function main() {
   });
 
   const hrOfficer = await createUser({
-    email: "rabia.naveed@hrms.pk",
+    email: "rabia.naveed@cellutechfzco.com",
     firstName: "Rabia",
     lastName: "Naveed",
     role: RoleName.EMPLOYEE,
@@ -414,7 +414,7 @@ async function main() {
   });
 
   const financeOfficer = await createUser({
-    email: "finance.karachi@hrms.pk",
+    email: "finance.karachi@cellutechfzco.com",
     firstName: "Nadia",
     lastName: "Rehman",
     role: RoleName.FINANCE,
@@ -427,7 +427,7 @@ async function main() {
   });
 
   const accountant = await createUser({
-    email: "imran.shaikh@hrms.pk",
+    email: "imran.shaikh@cellutechfzco.com",
     firstName: "Imran",
     lastName: "Shaikh",
     role: RoleName.EMPLOYEE,
@@ -440,7 +440,7 @@ async function main() {
   });
 
   const onLeaveEmp = await createUser({
-    email: "hira.javed@hrms.pk",
+    email: "hira.javed@cellutechfzco.com",
     firstName: "Hira",
     lastName: "Javed",
     role: RoleName.EMPLOYEE,
@@ -454,7 +454,7 @@ async function main() {
   });
 
   const formerEmp = await createUser({
-    email: "kamran.butt@hrms.pk",
+    email: "kamran.butt@cellutechfzco.com",
     firstName: "Kamran",
     lastName: "Butt",
     role: RoleName.EMPLOYEE,
@@ -468,7 +468,7 @@ async function main() {
   });
 
   const lahoreLead = await createUser({
-    email: "lead.lahore@hrms.pk",
+    email: "lead.lahore@cellutechfzco.com",
     firstName: "Zainab",
     lastName: "Hassan",
     role: RoleName.TEAM_LEAD,
@@ -481,7 +481,7 @@ async function main() {
   });
 
   const lahoreEmp = await createUser({
-    email: "omar.farooq@hrms.pk",
+    email: "omar.farooq@cellutechfzco.com",
     firstName: "Omar",
     lastName: "Farooq",
     role: RoleName.EMPLOYEE,
@@ -494,7 +494,7 @@ async function main() {
   });
 
   const lahoreEmp2 = await createUser({
-    email: "aiza.khan@hrms.pk",
+    email: "aiza.khan@cellutechfzco.com",
     firstName: "Aiza",
     lastName: "Khan",
     role: RoleName.EMPLOYEE,
@@ -507,7 +507,7 @@ async function main() {
   });
 
   const lahoreSalesHead = await createUser({
-    email: "head.sales.lahore@hrms.pk",
+    email: "head.sales.lahore@cellutechfzco.com",
     firstName: "Tariq",
     lastName: "Mehmood",
     role: RoleName.DEPARTMENT_HEAD,
@@ -520,7 +520,7 @@ async function main() {
   });
 
   const lahoreSales = await createUser({
-    email: "saad.ansari@hrms.pk",
+    email: "saad.ansari@cellutechfzco.com",
     firstName: "Saad",
     lastName: "Ansari",
     role: RoleName.EMPLOYEE,
@@ -533,7 +533,7 @@ async function main() {
   });
 
   const dubaiHr = await createUser({
-    email: "hr.dubai@hrms.pk",
+    email: "hr.dubai@cellutechfzco.com",
     firstName: "Maryam",
     lastName: "Abbas",
     role: RoleName.HR_MANAGER,
@@ -545,7 +545,7 @@ async function main() {
   });
 
   const dubaiLead = await createUser({
-    email: "lead.dubai@hrms.pk",
+    email: "lead.dubai@cellutechfzco.com",
     firstName: "Yasir",
     lastName: "Siddiqui",
     role: RoleName.TEAM_LEAD,
@@ -558,7 +558,7 @@ async function main() {
   });
 
   const dubaiEmp = await createUser({
-    email: "ali.nawaz@hrms.pk",
+    email: "ali.nawaz@cellutechfzco.com",
     firstName: "Ali",
     lastName: "Nawaz",
     role: RoleName.EMPLOYEE,
@@ -571,7 +571,7 @@ async function main() {
   });
 
   const dubaiEmp2 = await createUser({
-    email: "lina.hassan@hrms.pk",
+    email: "lina.hassan@cellutechfzco.com",
     firstName: "Lina",
     lastName: "Hassan",
     role: RoleName.EMPLOYEE,
@@ -584,7 +584,7 @@ async function main() {
   });
 
   const dubaiSales = await createUser({
-    email: "faisal.omar@hrms.pk",
+    email: "faisal.omar@cellutechfzco.com",
     firstName: "Faisal",
     lastName: "Omar",
     role: RoleName.EMPLOYEE,
@@ -1110,12 +1110,12 @@ async function main() {
   console.log("Demo password for all users:", PASSWORD);
   console.log("Active employees seeded:", allEmployees.length);
   console.log("Key logins:");
-  console.log("  Super Admin: seher.siddique@hrms.pk");
-  console.log("  HR Manager:  hr.karachi@hrms.pk");
-  console.log("  Dept Head:   head.eng@hrms.pk");
-  console.log("  Team Lead:   lead.eng@hrms.pk");
-  console.log("  Employee:    usman.raza@hrms.pk");
-  console.log("  Finance:     finance.karachi@hrms.pk");
+  console.log("  Super Admin: seher.siddique@cellutechfzco.com");
+  console.log("  HR Manager:  hr.karachi@cellutechfzco.com");
+  console.log("  Dept Head:   head.eng@cellutechfzco.com");
+  console.log("  Team Lead:   lead.eng@cellutechfzco.com");
+  console.log("  Employee:    usman.raza@cellutechfzco.com");
+  console.log("  Finance:     finance.karachi@cellutechfzco.com");
 }
 
 main()

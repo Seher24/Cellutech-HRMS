@@ -8,6 +8,10 @@ import {
   createDepartmentAction,
   createDesignationAction,
   createSubsidiaryAction,
+  deleteDepartmentAction,
+  deleteDesignationAction,
+  updateDepartmentAction,
+  updateDesignationAction,
   updateSubsidiaryAction,
 } from "@/lib/actions/hr";
 import { Button } from "@/components/ui/button";
@@ -23,6 +27,14 @@ type SubsidiaryRow = {
   isActive: boolean;
 };
 
+type DepartmentRow = {
+  id: string;
+  name: string;
+  subsidiaryName: string;
+  employeeCount: number;
+  designations: { id: string; title: string; employeeCount: number }[];
+};
+
 export function OrganizationForms({
   isSuperAdmin,
   companies,
@@ -30,6 +42,7 @@ export function OrganizationForms({
   subsidiaries,
   subsidiaryDetails,
   departments,
+  departmentDetails,
   defaultSubsidiaryId,
 }: {
   isSuperAdmin: boolean;
@@ -38,14 +51,21 @@ export function OrganizationForms({
   subsidiaries: { id: string; name: string }[];
   subsidiaryDetails: SubsidiaryRow[];
   departments: { id: string; name: string }[];
+  departmentDetails: DepartmentRow[];
   defaultSubsidiaryId: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingDeptId, setEditingDeptId] = useState<string | null>(null);
+  const [editingDesignationId, setEditingDesignationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
+      {error && (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         {isSuperAdmin && (
           <>
@@ -277,6 +297,164 @@ export function OrganizationForms({
           </div>
         </div>
       )}
+
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h4 className="mb-3 font-semibold">Edit departments and designations</h4>
+        <div className="space-y-4">
+          {departmentDetails.map((dept) => (
+            <div key={dept.id} className="rounded-lg border p-3">
+              {editingDeptId === dept.id ? (
+                <form
+                  className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const fd = new FormData(e.currentTarget);
+                    setError(null);
+                    startTransition(async () => {
+                      const result = await updateDepartmentAction({
+                        id: dept.id,
+                        name: String(fd.get("name")),
+                      });
+                      if (result?.error) {
+                        setError(result.error);
+                        return;
+                      }
+                      setEditingDeptId(null);
+                      router.refresh();
+                    });
+                  }}
+                >
+                  <Input name="name" defaultValue={dept.name} required className="sm:flex-1" />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={pending} className="bg-teal-700 hover:bg-teal-800">
+                      Save
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditingDeptId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium">
+                      {dept.name}{" "}
+                      <span className="text-xs text-slate-500">({dept.subsidiaryName})</span>
+                    </p>
+                    <p className="text-xs text-slate-500">{dept.employeeCount} employees</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setEditingDeptId(dept.id)}>
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={pending}
+                      onClick={() => {
+                        setError(null);
+                        startTransition(async () => {
+                          const result = await deleteDepartmentAction(dept.id);
+                          if (result?.error) {
+                            setError(result.error);
+                            return;
+                          }
+                          router.refresh();
+                        });
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 space-y-2 border-t pt-3">
+                {dept.designations.length === 0 && (
+                  <p className="text-xs text-slate-500">No designations yet</p>
+                )}
+                {dept.designations.map((des) =>
+                  editingDesignationId === des.id ? (
+                    <form
+                      key={des.id}
+                      className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const fd = new FormData(e.currentTarget);
+                        setError(null);
+                        startTransition(async () => {
+                          const result = await updateDesignationAction({
+                            id: des.id,
+                            title: String(fd.get("title")),
+                          });
+                          if (result?.error) {
+                            setError(result.error);
+                            return;
+                          }
+                          setEditingDesignationId(null);
+                          router.refresh();
+                        });
+                      }}
+                    >
+                      <Input name="title" defaultValue={des.title} required className="sm:flex-1" />
+                      <div className="flex gap-2">
+                        <Button type="submit" size="sm" disabled={pending} className="bg-teal-700 hover:bg-teal-800">
+                          Save
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingDesignationId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div
+                      key={des.id}
+                      className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                    >
+                      <span>
+                        {des.title}{" "}
+                        <span className="text-xs text-slate-500">({des.employeeCount} staff)</span>
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingDesignationId(des.id)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={pending}
+                          onClick={() => {
+                            setError(null);
+                            startTransition(async () => {
+                              const result = await deleteDesignationAction(des.id);
+                              if (result?.error) {
+                                setError(result.error);
+                                return;
+                              }
+                              router.refresh();
+                            });
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

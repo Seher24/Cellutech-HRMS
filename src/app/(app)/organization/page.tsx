@@ -36,7 +36,10 @@ export default async function OrganizationPage() {
           : { subsidiaryId: session.user.subsidiaryId ?? undefined },
       include: {
         subsidiary: true,
-        designations: true,
+        designations: {
+          include: { _count: { select: { users: true } } },
+          orderBy: { title: "asc" },
+        },
         _count: { select: { users: true } },
       },
       orderBy: { name: "asc" },
@@ -130,6 +133,17 @@ export default async function OrganizationPage() {
           isActive: s.isActive,
         }))}
         departments={departments.map((d) => ({ id: d.id, name: d.name }))}
+        departmentDetails={departments.map((d) => ({
+          id: d.id,
+          name: d.name,
+          subsidiaryName: d.subsidiary.name,
+          employeeCount: d._count.users,
+          designations: d.designations.map((des) => ({
+            id: des.id,
+            title: des.title,
+            employeeCount: des._count.users,
+          })),
+        }))}
         defaultSubsidiaryId={session.user.subsidiaryId}
       />
     </div>

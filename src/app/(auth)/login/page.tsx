@@ -21,8 +21,8 @@ export default function LoginPage() {
               </p>
             </div>
             <div className="space-y-2 text-xs text-slate-400">
-              <p>Demo password for all users: Password123!</p>
-              <p>seher.siddique@hrms.pk · hr.karachi@hrms.pk · usman.raza@hrms.pk</p>
+              <p>Sign in with your Cellutech work email</p>
+              <p>Domain: @cellutechfzco.com</p>
               <MadeByCredit className="pt-2 text-slate-500" />
             </div>
           </div>

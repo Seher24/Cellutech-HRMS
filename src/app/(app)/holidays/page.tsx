@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/rbac";
-import { HolidayForm } from "@/components/holidays/holiday-form";
-import { ResponsiveTable } from "@/components/ui/responsive-table";
+import { HolidayManager } from "@/components/holidays/holiday-manager";
 import { formatDate } from "@/lib/format";
 
 export default async function HolidaysPage({
@@ -72,40 +71,45 @@ export default async function HolidaysPage({
         )}
       </div>
 
-      <ResponsiveTable>
-        <table className="w-full min-w-[320px] text-left text-sm">
-          <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Holiday</th>
-              <th className="px-4 py-3">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {holidays.length === 0 && (
-              <tr>
-                <td colSpan={2} className="px-4 py-8 text-center text-slate-500">
-                  No holidays configured.
-                </td>
-              </tr>
-            )}
-            {holidays.map((h) => (
-              <tr key={h.id} className="border-b border-slate-100">
-                <td className="px-4 py-3 font-medium">{h.name}</td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {formatDate(h.date, timeZone)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ResponsiveTable>
-
-      {canManage && subsidiaryId && (
-        <HolidayForm
+      {canManage && subsidiaryId ? (
+        <HolidayManager
           subsidiaryId={subsidiaryId}
           subsidiaries={subsidiaries.map((s) => ({ id: s.id, name: s.name }))}
           lockSubsidiary={session.user.role !== RoleName.SUPER_ADMIN}
+          holidays={holidays.map((h) => ({
+            id: h.id,
+            name: h.name,
+            date: h.date.toISOString().slice(0, 10),
+          }))}
         />
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table className="w-full min-w-[320px] text-left text-sm">
+            <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-3">Holiday</th>
+                <th className="px-4 py-3">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {holidays.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-4 py-8 text-center text-slate-500">
+                    No holidays configured.
+                  </td>
+                </tr>
+              )}
+              {holidays.map((h) => (
+                <tr key={h.id} className="border-b border-slate-100">
+                  <td className="px-4 py-3 font-medium">{h.name}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {formatDate(h.date, timeZone)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

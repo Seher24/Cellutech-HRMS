@@ -77,11 +77,11 @@ Write-Host "----------------------------------------" -ForegroundColor DarkGray
 Write-Host " Demo logins (password for all):" -ForegroundColor White
 Write-Host "   Password123!" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "   Super Admin : seher.siddique@hrms.pk" -ForegroundColor White
-Write-Host "   HR Manager  : hr.karachi@hrms.pk" -ForegroundColor White
-Write-Host "   Dept Head   : head.eng@hrms.pk" -ForegroundColor White
-Write-Host "   Team Lead   : lead.eng@hrms.pk" -ForegroundColor White
-Write-Host "   Employee    : usman.raza@hrms.pk" -ForegroundColor White
+Write-Host "   Super Admin : seher.siddique@cellutechfzco.com" -ForegroundColor White
+Write-Host "   HR Manager  : hr.karachi@cellutechfzco.com" -ForegroundColor White
+Write-Host "   Dept Head   : head.eng@cellutechfzco.com" -ForegroundColor White
+Write-Host "   Team Lead   : lead.eng@cellutechfzco.com" -ForegroundColor White
+Write-Host "   Employee    : usman.raza@cellutechfzco.com" -ForegroundColor White
 Write-Host "----------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "[5/5] Starting Next.js at http://localhost:3000 ..." -ForegroundColor Yellow

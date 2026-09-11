@@ -128,6 +128,133 @@ export async function updateOwnProfileAction(input: {
   return { success: true };
 }
 
+export async function changePasswordAction(input: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "edit_own_profile");
+
+  const currentPassword = input.currentPassword?.trim() ?? "";
+  const newPassword = input.newPassword?.trim() ?? "";
+  const confirmPassword = input.confirmPassword?.trim() ?? "";
+
+  if (newPassword.length < 8) {
+    return { error: "New password must be at least 8 characters" };
+  }
+  if (newPassword !== confirmPassword) {
+    return { error: "New password and confirmation do not match" };
+  }
+  if (currentPassword === newPassword) {
+    return { error: "New password must be different from your current password" };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: actor.id } });
+  if (!user) return { error: "User not found" };
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return { error: "Current password is incorrect" };
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: actor.id },
+    data: { passwordHash },
+  });
+
+  revalidatePath("/employees/me");
+  return { success: true };
+}
+
+export async function updateEmployeeAction(input: {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  roleName:
+    | "SUPER_ADMIN"
+    | "HR_MANAGER"
+    | "DEPARTMENT_HEAD"
+    | "TEAM_LEAD"
+    | "EMPLOYEE"
+    | "FINANCE";
+  subsidiaryId: string;
+  departmentId: string;
+  designationId?: string;
+  managerId?: string;
+  joiningDate: string;
+  status: "ACTIVE" | "ON_LEAVE" | "TERMINATED";
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_employees");
+
+  const target = await prisma.user.findUnique({ where: { id: input.id } });
+  if (!target) return { error: "Employee not found" };
+  if (!canAccessSubsidiary(actor, target.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+  if (!canAccessSubsidiary(actor, input.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+  if (input.roleName === RoleName.SUPER_ADMIN && actor.role !== RoleName.SUPER_ADMIN) {
+    return { error: "Only Super Admin can assign Super Admin" };
+  }
+
+  const email = input.email.toLowerCase();
+  const clash = await prisma.user.findFirst({
+    where: { email, NOT: { id: input.id } },
+  });
+  if (clash) return { error: "Email already in use" };
+
+  const role = await prisma.role.findUnique({ where: { name: input.roleName } });
+  if (!role) return { error: "Invalid role" };
+
+  await prisma.user.update({
+    where: { id: input.id },
+    data: {
+      firstName: input.firstName,
+      lastName: input.lastName,
+      email,
+      phone: input.phone || null,
+      roleId: role.id,
+      subsidiaryId: input.subsidiaryId,
+      departmentId: input.departmentId,
+      designationId: input.designationId || null,
+      managerId: input.managerId || null,
+      joiningDate: new Date(input.joiningDate),
+      status: input.status,
+    },
+  });
+
+  revalidatePath("/employees");
+  revalidatePath(`/employees/${input.id}`);
+  revalidatePath("/org-chart");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function reactivateEmployeeAction(userId: string) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_employees");
+
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) return { error: "Employee not found" };
+  if (!canAccessSubsidiary(actor, target.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: EmploymentStatus.ACTIVE },
+  });
+
+  revalidatePath("/employees");
+  revalidatePath(`/employees/${userId}`);
+  revalidatePath("/org-chart");
+  return { success: true };
+}
+
 const orgSchema = z.object({
   name: z.string().min(1),
   city: z.string().min(1),
@@ -245,6 +372,133 @@ export async function createHolidayAction(input: {
     },
   });
   revalidatePath("/holidays");
+  return { success: true };
+}
+
+export async function updateHolidayAction(input: {
+  id: string;
+  name: string;
+  date: string;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_holidays");
+
+  const holiday = await prisma.holiday.findUnique({ where: { id: input.id } });
+  if (!holiday) return { error: "Holiday not found" };
+  if (!canAccessSubsidiary(actor, holiday.subsidiaryId)) {
+    return { error: "Forbidden" };
+  }
+
+  await prisma.holiday.update({
+    where: { id: input.id },
+    data: {
+      name: input.name,
+      date: new Date(input.date),
+    },
+  });
+  revalidatePath("/holidays");
+  return { success: true };
+}
+
+export async function deleteHolidayAction(id: string) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_holidays");
+
+  const holiday = await prisma.holiday.findUnique({ where: { id } });
+  if (!holiday) return { error: "Holiday not found" };
+  if (!canAccessSubsidiary(actor, holiday.subsidiaryId)) {
+    return { error: "Forbidden" };
+  }
+
+  await prisma.holiday.delete({ where: { id } });
+  revalidatePath("/holidays");
+  return { success: true };
+}
+
+export async function updateDepartmentAction(input: { id: string; name: string }) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_departments");
+
+  const dept = await prisma.department.findUnique({ where: { id: input.id } });
+  if (!dept) return { error: "Department not found" };
+  if (!canAccessSubsidiary(actor, dept.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+
+  await prisma.department.update({
+    where: { id: input.id },
+    data: { name: input.name },
+  });
+  revalidatePath("/organization");
+  return { success: true };
+}
+
+export async function deleteDepartmentAction(id: string) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_departments");
+
+  const dept = await prisma.department.findUnique({
+    where: { id },
+    include: { _count: { select: { users: true, designations: true } } },
+  });
+  if (!dept) return { error: "Department not found" };
+  if (!canAccessSubsidiary(actor, dept.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+  if (dept._count.users > 0) {
+    return { error: "Move or deactivate employees before deleting this department" };
+  }
+  if (dept._count.designations > 0) {
+    return { error: "Delete designations in this department first" };
+  }
+
+  await prisma.department.delete({ where: { id } });
+  revalidatePath("/organization");
+  return { success: true };
+}
+
+export async function updateDesignationAction(input: { id: string; title: string }) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_departments");
+
+  const designation = await prisma.designation.findUnique({
+    where: { id: input.id },
+    include: { department: true },
+  });
+  if (!designation) return { error: "Designation not found" };
+  if (!canAccessSubsidiary(actor, designation.department.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+
+  await prisma.designation.update({
+    where: { id: input.id },
+    data: { title: input.title },
+  });
+  revalidatePath("/organization");
+  return { success: true };
+}
+
+export async function deleteDesignationAction(id: string) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_departments");
+
+  const designation = await prisma.designation.findUnique({
+    where: { id },
+    include: {
+      department: true,
+      _count: { select: { users: true } },
+    },
+  });
+  if (!designation) return { error: "Designation not found" };
+  if (!canAccessSubsidiary(actor, designation.department.subsidiaryId)) {
+    return { error: "Forbidden: subsidiary scope" };
+  }
+  if (designation._count.users > 0) {
+    return { error: "Reassign employees before deleting this designation" };
+  }
+
+  await prisma.designation.delete({ where: { id } });
+  revalidatePath("/organization");
   return { success: true };
 }
 

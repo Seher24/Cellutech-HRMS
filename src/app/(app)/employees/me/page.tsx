@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ProfileForm } from "@/components/employees/profile-form";
+import { ChangePasswordForm } from "@/components/employees/change-password-form";
 
 export default async function MyProfilePage() {
   const session = await auth();
@@ -24,13 +25,13 @@ export default async function MyProfilePage() {
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">My profile</h2>
-        <p className="text-sm text-slate-500">Update your personal contact details</p>
+        <p className="text-sm text-slate-500">Update your personal details and password</p>
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <dl className="mb-6 grid gap-3 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-3">
             <dt className="text-slate-500">Email</dt>
-            <dd>{me.email}</dd>
+            <dd className="break-all text-right">{me.email}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-slate-500">Role</dt>
@@ -58,6 +59,9 @@ export default async function MyProfilePage() {
           lastName={me.lastName}
           phone={me.phone ?? ""}
         />
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <ChangePasswordForm />
       </div>
     </div>
   );
