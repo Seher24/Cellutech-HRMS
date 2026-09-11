@@ -16,19 +16,23 @@ Multi-subsidiary Human Resource Management System built for the Next.js assessme
 - Authentication with role-based sessions (Super Admin, HR Manager, Department Head, Team Lead, Employee)
 - Organization model: countries, subsidiaries, departments, designations
 - Employee lifecycle: directory, profile, onboarding, soft deactivation
-- Reporting hierarchy + interactive org chart
-- Leave management with multi-level approval, escalation, HR override, balances, and audit trail
+- Employee document uploads (PDF/Word/images) with validation
+- Reporting hierarchy + subsidiary and global org charts
+- Leave management with multi-level approval, escalation, HR override, balances, overlap calendar
 - Role-based dashboards with DB-driven Recharts widgets
 - Holiday calendars per subsidiary (excluded from leave day counts)
 - Simplified attendance status
 - In-app notifications for leave events
+- Announcement management for Admin/HR
+- CSV exports for headcount, leave, and attendance
+- React Hook Form + Zod on key forms
 
 ## Deferred (documented for future)
 
 - Payroll / Finance officer workflows
 - Recruitment / ATS
 - Performance management
-- Document vault & PDF exports
+- PDF report generation (CSV exports are available)
 
 These can extend from the current Prisma schema (users, subsidiaries, leave/attendance already provide payroll inputs).
 

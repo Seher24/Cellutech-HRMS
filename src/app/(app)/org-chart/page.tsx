@@ -19,12 +19,11 @@ export default async function OrgChartPage({
     orderBy: { name: "asc" },
   });
 
-  const subsidiaryId =
-    session.user.role === RoleName.SUPER_ADMIN
-      ? params.subsidiaryId || subsidiaries[0]?.id
-      : session.user.subsidiaryId;
+  const isSuperAdmin = session.user.role === RoleName.SUPER_ADMIN;
+  const selected = params.subsidiaryId ?? (isSuperAdmin ? "all" : session.user.subsidiaryId);
+  const isGlobal = isSuperAdmin && (selected === "all" || !selected);
 
-  const tree = await buildOrgTree(subsidiaryId);
+  const tree = await buildOrgTree(isGlobal ? null : selected);
 
   return (
     <div className="space-y-6">
@@ -32,16 +31,19 @@ export default async function OrgChartPage({
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Organization chart</h2>
           <p className="text-sm text-slate-500">
-            Reporting hierarchy driven by each employee&apos;s manager
+            {isGlobal
+              ? "Consolidated global reporting hierarchy across all subsidiaries"
+              : "Reporting hierarchy driven by each employee's manager"}
           </p>
         </div>
-        {session.user.role === RoleName.SUPER_ADMIN && (
+        {isSuperAdmin && (
           <form className="flex gap-2">
             <select
               name="subsidiaryId"
-              defaultValue={subsidiaryId ?? ""}
+              defaultValue={selected ?? "all"}
               className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm"
             >
+              <option value="all">All subsidiaries (global)</option>
               {subsidiaries.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name} ({s.country.code})

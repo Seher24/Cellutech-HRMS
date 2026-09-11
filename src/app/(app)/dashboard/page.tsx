@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   const year = new Date().getFullYear();
 
   if (user.role === RoleName.SUPER_ADMIN) {
-    const [totalHeadcount, bySubsidiary, pendingLeaves, announcements] =
+    const [totalHeadcount, bySubsidiary, pendingLeaves, announcements, countryCount] =
       await Promise.all([
         prisma.user.count({ where: { status: { not: "TERMINATED" } } }),
         prisma.subsidiary.findMany({
@@ -29,6 +29,7 @@ export default async function DashboardPage() {
           orderBy: { createdAt: "desc" },
           take: 3,
         }),
+        prisma.country.count(),
       ]);
 
     const chartData = bySubsidiary.map((s) => ({
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
           { label: "Total headcount", value: String(totalHeadcount) },
           { label: "Subsidiaries", value: String(bySubsidiary.length) },
           { label: "Pending leave", value: String(pendingLeaves) },
-          { label: "Countries", value: "2" },
+          { label: "Countries", value: String(countryCount) },
         ]}
         chartTitle="Headcount by subsidiary"
         chartData={chartData}
