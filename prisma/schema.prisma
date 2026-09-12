@@ -13,6 +13,7 @@ enum RoleName {
   DEPARTMENT_HEAD
   TEAM_LEAD
   EMPLOYEE
+  FINANCE
 }
 
 enum EmploymentStatus {
@@ -239,14 +240,16 @@ model Holiday {
 }
 
 model Attendance {
-  id        String           @id @default(cuid())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id])
-  date      DateTime
-  status    AttendanceStatus @default(PRESENT)
-  note      String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  date       DateTime
+  status     AttendanceStatus @default(PRESENT)
+  checkInAt  DateTime?
+  checkOutAt DateTime?
+  note       String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
   @@unique([userId, date])
   @@index([userId])
