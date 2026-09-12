@@ -34,6 +34,7 @@ async function main() {
         [RoleName.DEPARTMENT_HEAD, "Department Head"],
         [RoleName.TEAM_LEAD, "Team Lead / Line Manager"],
         [RoleName.EMPLOYEE, "Employee"],
+        [RoleName.FINANCE, "Finance / Payroll Officer"],
       ] as const
     ).map(([name, description]) =>
       prisma.role.create({ data: { name, description } })
@@ -381,6 +382,19 @@ async function main() {
     phone: "+971-50-1110013",
   });
 
+  const financeOfficer = await createUser({
+    email: "finance.karachi@hrms.pk",
+    firstName: "Nadia",
+    lastName: "Rehman",
+    role: RoleName.FINANCE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Finance.id,
+    designationId: kDepts.Finance.designations["Finance Manager"],
+    managerId: hrKarachi.id,
+    joiningDate: new Date("2020-04-15"),
+    phone: "+92-300-1110014",
+  });
+
   const allEmployees = [
     hrKarachi,
     hrLahore,
@@ -394,6 +408,7 @@ async function main() {
     lahoreEmp,
     dubaiHr,
     dubaiEmp,
+    financeOfficer,
   ];
 
   for (const user of allEmployees) {
@@ -592,6 +607,7 @@ async function main() {
   console.log("  Dept Head:   head.eng@hrms.pk");
   console.log("  Team Lead:   lead.eng@hrms.pk");
   console.log("  Employee:    usman.raza@hrms.pk");
+  console.log("  Finance:     finance.karachi@hrms.pk");
 }
 
 main()

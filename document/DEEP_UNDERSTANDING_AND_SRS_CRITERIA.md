@@ -255,11 +255,11 @@ This installs deps if needed, migrates, seeds, and runs http://localhost:3000.
 | 3.4 | Reporting hierarchy and org chart | **Met** | Per-subsidiary + Super Admin global chart; manager chain |
 | 3.5 | Leave management | **Met** | Multi-level, balances, audit, overlap timeline calendar |
 | 3.6 | Holiday calendar | **Met** | Per subsidiary + leave day exclusion |
-| 3.7 | Attendance and timesheet | **Mostly met** | Daily status; not full hourly timesheet |
-| 3.8 | Role-based dashboards | **Met** | Live widgets |
+| 3.7 | Attendance and timesheet | **Met** | Daily status plus check-in / check-out punches |
+| 3.8 | Role-based dashboards | **Met** | Live widgets including Finance overview |
 | 3.9 | Notifications and announcements | **Met** | Leave notifications + Admin/HR announcement CRUD |
-| 3.10 | Document and asset management | **Met** | Employee document upload/download with validation |
-| 3.11 | Reports and exports CSV/PDF | **Mostly met** | CSV exports for headcount/leave/attendance; PDF deferred |
+| 3.10 | Document and asset management | **Met** | Employee docs + central policy vault |
+| 3.11 | Reports and exports CSV/PDF | **Met** | CSV and PDF for headcount/leave/attendance |
 
 ### Tech stack (§1.6)
 
@@ -315,7 +315,7 @@ A: No. Nav is role-aware, but Server Actions and leave workflow also check role 
 A: `countWorkingDays` skips Saturdays, Sundays, and dates in the subsidiary `Holiday` table.
 
 **Q: What did you deliberately not build?**  
-A: Payroll, ATS, performance (SRS §9.3). Also document vault and CSV/PDF exports are deferred; architecture can extend via new models/pages.
+A: Full payroll calculation, ATS, and performance (SRS §9.3). Finance view-only role, policy vault, and CSV/PDF exports are included.
 
 **Q: How would you add MySQL in production?**  
 A: Set Prisma provider to mysql, point `DATABASE_URL` to managed MySQL, run migrate, keep the same app code.
@@ -332,9 +332,9 @@ A: Seher Siddique, Super Admin, `seher.siddique@hrms.pk`.
 
 If asked what remains thinner versus the full vision SRS:
 
-1. Attendance is daily status, not a full hourly timesheet  
-2. Report exports are CSV (PDF generation not built)  
-3. Document storage is local filesystem (fine for demo; S3-style storage for production)  
+1. Finance role is view/export oriented; no payroll calculation engine  
+2. Document storage is local filesystem (fine for demo; S3-style storage for production)  
+3. Timesheet is check-in/out punches, not full hourly project time tracking  
 
 Mandatory assignment criteria (§9.1-9.2, §9.5) are met.
 ---

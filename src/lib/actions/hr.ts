@@ -19,6 +19,7 @@ const employeeSchema = z.object({
     "DEPARTMENT_HEAD",
     "TEAM_LEAD",
     "EMPLOYEE",
+    "FINANCE",
   ]),
   subsidiaryId: z.string().min(1),
   departmentId: z.string().min(1),

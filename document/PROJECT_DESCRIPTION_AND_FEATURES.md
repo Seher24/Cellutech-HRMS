@@ -223,12 +223,11 @@ Then open http://localhost:3000
 
 Documented for future expansion (SRS deferred modules):
 
-- Payroll / finance officer workflows  
+- Full payroll calculation / disbursement  
 - Recruitment / ATS  
 - Performance management  
-- Full document vault and CSV/PDF report exports  
 
-The current schema and architecture are designed so these modules can be added without redesigning the core org and leave model.
+Finance view-only access, policy vault, and CSV/PDF exports are already in the app. The schema is designed so payroll calculation can extend without redesigning org and leave models.
 
 ---
 

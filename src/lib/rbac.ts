@@ -78,6 +78,12 @@ const ROLE_PERMISSIONS: Record<RoleName, AppPermission[]> = {
     "edit_own_profile",
   ],
   EMPLOYEE: ["view_org_chart", "apply_leave", "edit_own_profile"],
+  FINANCE: [
+    "view_subsidiary_dashboard",
+    "view_attendance",
+    "view_org_chart",
+    "edit_own_profile",
+  ],
 };
 
 export function hasPermission(role: RoleName, permission: AppPermission) {
@@ -108,6 +114,8 @@ export function displayRole(role: RoleName) {
       return "Team Lead";
     case RoleName.EMPLOYEE:
       return "Employee";
+    case RoleName.FINANCE:
+      return "Finance / Payroll";
     default:
       return role;
   }

@@ -13,26 +13,27 @@ Multi-subsidiary Human Resource Management System built for the Next.js assessme
 
 ## Features completed
 
-- Authentication with role-based sessions (Super Admin, HR Manager, Department Head, Team Lead, Employee)
-- Organization model: countries, subsidiaries, departments, designations
+- Authentication with role-based sessions (Super Admin, HR Manager, Department Head, Team Lead, Employee, Finance)
+- Organization model: Company parent, countries, subsidiaries, departments, designations
 - Employee lifecycle: directory, profile, onboarding, soft deactivation
 - Employee document uploads (PDF/Word/images) with validation
+- Central HR policy document vault
 - Reporting hierarchy + subsidiary and global org charts
-- Leave management with multi-level approval, escalation, HR override, balances, overlap calendar
+- Leave management with multi-level approval, escalation, HR override, balances, cancel, overlap calendar
 - Role-based dashboards with DB-driven Recharts widgets
 - Holiday calendars per subsidiary (excluded from leave day counts)
-- Simplified attendance status
+- Attendance with daily status plus check-in / check-out timesheet punches
 - In-app notifications for leave events
-- Announcement management for Admin/HR
-- CSV exports for headcount, leave, and attendance
+- Announcement management for Admin/HR (create, edit, delete)
+- CSV and PDF exports for headcount, leave, and attendance
+- Finance / Payroll view-only role for subsidiary leave and attendance inputs
 - React Hook Form + Zod on key forms
 
 ## Deferred (documented for future)
 
-- Payroll / Finance officer workflows
+- Full payroll calculation / disbursement engine
 - Recruitment / ATS
 - Performance management
-- PDF report generation (CSV exports are available)
 
 These can extend from the current Prisma schema (users, subsidiaries, leave/attendance already provide payroll inputs).
 
@@ -91,6 +92,7 @@ Password for **all** seeded users: `Password123!`
 | Department Head | head.eng@hrms.pk |
 | Team Lead | lead.eng@hrms.pk |
 | Employee | usman.raza@hrms.pk |
+| Finance / Payroll | finance.karachi@hrms.pk |
 
 Seed data uses Pakistani employee names across Pakistan (Karachi, Lahore) and UAE (Dubai) subsidiaries.
 

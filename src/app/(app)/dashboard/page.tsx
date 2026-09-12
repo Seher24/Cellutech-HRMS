@@ -180,6 +180,40 @@ export default async function DashboardPage() {
     );
   }
 
+  if (user.role === RoleName.FINANCE) {
+    const subsidiaryId = user.subsidiaryId!;
+    const [approvedLeave, attendanceRows, headcount] = await Promise.all([
+      prisma.leaveRequest.count({
+        where: { status: "APPROVED", user: { subsidiaryId } },
+      }),
+      prisma.attendance.count({
+        where: { user: { subsidiaryId } },
+      }),
+      prisma.user.count({
+        where: { subsidiaryId, status: { not: "TERMINATED" } },
+      }),
+    ]);
+
+    return (
+      <DashboardShell
+        title="Finance / Payroll Overview"
+        subtitle="View-only leave and attendance inputs for payroll"
+        metrics={[
+          { label: "Subsidiary headcount", value: String(headcount) },
+          { label: "Approved leave records", value: String(approvedLeave) },
+          { label: "Attendance rows", value: String(attendanceRows) },
+          { label: "Export access", value: "CSV + PDF" },
+        ]}
+        chartTitle="Payroll data volume"
+        chartData={[
+          { name: "Headcount", headcount },
+          { name: "Leave", headcount: approvedLeave },
+          { name: "Attendance", headcount: attendanceRows },
+        ]}
+      />
+    );
+  }
+
   // Employee dashboard
   const [balances, myRequests, holidays, announcements] = await Promise.all([
     prisma.leaveBalance.findMany({

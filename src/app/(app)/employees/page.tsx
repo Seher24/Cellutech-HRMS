@@ -22,7 +22,8 @@ export default async function EmployeesPage({
   const where = {
     ...(session.user.role === RoleName.SUPER_ADMIN
       ? {}
-      : session.user.role === RoleName.HR_MANAGER
+      : session.user.role === RoleName.HR_MANAGER ||
+          session.user.role === RoleName.FINANCE
         ? { subsidiaryId: session.user.subsidiaryId }
         : session.user.role === RoleName.DEPARTMENT_HEAD
           ? { departmentId: session.user.departmentId }
