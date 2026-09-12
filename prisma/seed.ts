@@ -1,12 +1,41 @@
-import { PrismaClient, RoleName, EmploymentStatus, LeaveRequestStatus, ApprovalDecision, AttendanceStatus, AnnouncementScope } from "@prisma/client";
+import fs from "fs";
+import path from "path";
+import {
+  PrismaClient,
+  RoleName,
+  EmploymentStatus,
+  LeaveRequestStatus,
+  ApprovalDecision,
+  AttendanceStatus,
+  AnnouncementScope,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 const PASSWORD = "Password123!";
 
+function atMidnight(date: Date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function daysFromToday(offset: number) {
+  const d = atMidnight(new Date());
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+function withTime(base: Date, hours: number, minutes: number) {
+  const d = new Date(base);
+  d.setHours(hours, minutes, 0, 0);
+  return d;
+}
+
 async function main() {
   await prisma.notification.deleteMany();
+  await prisma.policyDocument.deleteMany();
   await prisma.employeeDocument.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.attendance.deleteMany();
@@ -100,12 +129,12 @@ async function main() {
       });
       const titles =
         name === "Engineering"
-          ? ["Software Engineer", "Engineering Manager", "Tech Lead"]
+          ? ["Software Engineer", "Engineering Manager", "Tech Lead", "QA Engineer"]
           : name === "Sales"
-            ? ["Sales Executive", "Sales Manager"]
+            ? ["Sales Executive", "Sales Manager", "Account Executive"]
             : name === "HR"
               ? ["HR Officer", "HR Manager"]
-              : ["Accountant", "Finance Manager"];
+              : ["Accountant", "Finance Manager", "Payroll Officer"];
       const designations: Record<string, string> = {};
       for (const title of titles) {
         const d = await prisma.designation.create({
@@ -199,6 +228,7 @@ async function main() {
     managerId?: string;
     joiningDate: Date;
     phone?: string;
+    status?: EmploymentStatus;
   };
 
   async function createUser(data: UserSeed) {
@@ -210,7 +240,7 @@ async function main() {
         lastName: data.lastName,
         phone: data.phone,
         joiningDate: data.joiningDate,
-        status: EmploymentStatus.ACTIVE,
+        status: data.status ?? EmploymentStatus.ACTIVE,
         roleId: roleMap[data.role],
         subsidiaryId: data.subsidiaryId,
         departmentId: data.departmentId,
@@ -331,6 +361,112 @@ async function main() {
     phone: "+92-300-1110009",
   });
 
+  const engQa = await createUser({
+    email: "mehwish.tariq@hrms.pk",
+    firstName: "Mehwish",
+    lastName: "Tariq",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Engineering.id,
+    designationId: kDepts.Engineering.designations["QA Engineer"],
+    managerId: teamLead.id,
+    joiningDate: new Date("2023-03-12"),
+    phone: "+92-300-1110015",
+  });
+
+  const engJunior = await createUser({
+    email: "danish.akhtar@hrms.pk",
+    firstName: "Danish",
+    lastName: "Akhtar",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Engineering.id,
+    designationId: kDepts.Engineering.designations["Software Engineer"],
+    managerId: teamLead.id,
+    joiningDate: new Date("2024-01-08"),
+    phone: "+92-300-1110016",
+  });
+
+  const salesExec2 = await createUser({
+    email: "noor.fatima@hrms.pk",
+    firstName: "Noor",
+    lastName: "Fatima",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Sales.id,
+    designationId: kDepts.Sales.designations["Account Executive"],
+    managerId: salesHead.id,
+    joiningDate: new Date("2023-08-21"),
+    phone: "+92-300-1110017",
+  });
+
+  const hrOfficer = await createUser({
+    email: "rabia.naveed@hrms.pk",
+    firstName: "Rabia",
+    lastName: "Naveed",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.HR.id,
+    designationId: kDepts.HR.designations["HR Officer"],
+    managerId: hrKarachi.id,
+    joiningDate: new Date("2022-11-01"),
+    phone: "+92-300-1110018",
+  });
+
+  const financeOfficer = await createUser({
+    email: "finance.karachi@hrms.pk",
+    firstName: "Nadia",
+    lastName: "Rehman",
+    role: RoleName.FINANCE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Finance.id,
+    designationId: kDepts.Finance.designations["Finance Manager"],
+    managerId: hrKarachi.id,
+    joiningDate: new Date("2020-04-15"),
+    phone: "+92-300-1110014",
+  });
+
+  const accountant = await createUser({
+    email: "imran.shaikh@hrms.pk",
+    firstName: "Imran",
+    lastName: "Shaikh",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Finance.id,
+    designationId: kDepts.Finance.designations["Accountant"],
+    managerId: financeOfficer.id,
+    joiningDate: new Date("2021-09-05"),
+    phone: "+92-300-1110019",
+  });
+
+  const onLeaveEmp = await createUser({
+    email: "hira.javed@hrms.pk",
+    firstName: "Hira",
+    lastName: "Javed",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Engineering.id,
+    designationId: kDepts.Engineering.designations["Software Engineer"],
+    managerId: teamLead.id,
+    joiningDate: new Date("2021-05-18"),
+    phone: "+92-300-1110020",
+    status: EmploymentStatus.ON_LEAVE,
+  });
+
+  const formerEmp = await createUser({
+    email: "kamran.butt@hrms.pk",
+    firstName: "Kamran",
+    lastName: "Butt",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: karachi.id,
+    departmentId: kDepts.Sales.id,
+    designationId: kDepts.Sales.designations["Sales Executive"],
+    managerId: salesHead.id,
+    joiningDate: new Date("2020-02-10"),
+    phone: "+92-300-1110021",
+    status: EmploymentStatus.TERMINATED,
+  });
+
   const lahoreLead = await createUser({
     email: "lead.lahore@hrms.pk",
     firstName: "Zainab",
@@ -357,6 +493,45 @@ async function main() {
     phone: "+92-300-1110011",
   });
 
+  const lahoreEmp2 = await createUser({
+    email: "aiza.khan@hrms.pk",
+    firstName: "Aiza",
+    lastName: "Khan",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: lahore.id,
+    departmentId: lDepts.Engineering.id,
+    designationId: lDepts.Engineering.designations["QA Engineer"],
+    managerId: lahoreLead.id,
+    joiningDate: new Date("2024-03-04"),
+    phone: "+92-300-1110022",
+  });
+
+  const lahoreSalesHead = await createUser({
+    email: "head.sales.lahore@hrms.pk",
+    firstName: "Tariq",
+    lastName: "Mehmood",
+    role: RoleName.DEPARTMENT_HEAD,
+    subsidiaryId: lahore.id,
+    departmentId: lDepts.Sales.id,
+    designationId: lDepts.Sales.designations["Sales Manager"],
+    managerId: hrLahore.id,
+    joiningDate: new Date("2020-10-15"),
+    phone: "+92-300-1110023",
+  });
+
+  const lahoreSales = await createUser({
+    email: "saad.ansari@hrms.pk",
+    firstName: "Saad",
+    lastName: "Ansari",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: lahore.id,
+    departmentId: lDepts.Sales.id,
+    designationId: lDepts.Sales.designations["Sales Executive"],
+    managerId: lahoreSalesHead.id,
+    joiningDate: new Date("2023-12-01"),
+    phone: "+92-300-1110024",
+  });
+
   const dubaiHr = await createUser({
     email: "hr.dubai@hrms.pk",
     firstName: "Maryam",
@@ -369,6 +544,19 @@ async function main() {
     phone: "+971-50-1110012",
   });
 
+  const dubaiLead = await createUser({
+    email: "lead.dubai@hrms.pk",
+    firstName: "Yasir",
+    lastName: "Siddiqui",
+    role: RoleName.TEAM_LEAD,
+    subsidiaryId: dubai.id,
+    departmentId: dDepts.Engineering.id,
+    designationId: dDepts.Engineering.designations["Tech Lead"],
+    managerId: dubaiHr.id,
+    joiningDate: new Date("2022-06-20"),
+    phone: "+971-50-1110025",
+  });
+
   const dubaiEmp = await createUser({
     email: "ali.nawaz@hrms.pk",
     firstName: "Ali",
@@ -377,22 +565,35 @@ async function main() {
     subsidiaryId: dubai.id,
     departmentId: dDepts.Engineering.id,
     designationId: dDepts.Engineering.designations["Software Engineer"],
-    managerId: dubaiHr.id,
+    managerId: dubaiLead.id,
     joiningDate: new Date("2024-02-01"),
     phone: "+971-50-1110013",
   });
 
-  const financeOfficer = await createUser({
-    email: "finance.karachi@hrms.pk",
-    firstName: "Nadia",
-    lastName: "Rehman",
-    role: RoleName.FINANCE,
-    subsidiaryId: karachi.id,
-    departmentId: kDepts.Finance.id,
-    designationId: kDepts.Finance.designations["Finance Manager"],
-    managerId: hrKarachi.id,
-    joiningDate: new Date("2020-04-15"),
-    phone: "+92-300-1110014",
+  const dubaiEmp2 = await createUser({
+    email: "lina.hassan@hrms.pk",
+    firstName: "Lina",
+    lastName: "Hassan",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: dubai.id,
+    departmentId: dDepts.Engineering.id,
+    designationId: dDepts.Engineering.designations["Software Engineer"],
+    managerId: dubaiLead.id,
+    joiningDate: new Date("2023-07-17"),
+    phone: "+971-50-1110026",
+  });
+
+  const dubaiSales = await createUser({
+    email: "faisal.omar@hrms.pk",
+    firstName: "Faisal",
+    lastName: "Omar",
+    role: RoleName.EMPLOYEE,
+    subsidiaryId: dubai.id,
+    departmentId: dDepts.Sales.id,
+    designationId: dDepts.Sales.designations["Sales Executive"],
+    managerId: dubaiHr.id,
+    joiningDate: new Date("2022-12-05"),
+    phone: "+971-50-1110027",
   });
 
   const allEmployees = [
@@ -404,22 +605,53 @@ async function main() {
     emp1,
     emp2,
     emp3,
+    engQa,
+    engJunior,
+    salesExec2,
+    hrOfficer,
+    financeOfficer,
+    accountant,
+    onLeaveEmp,
     lahoreLead,
     lahoreEmp,
+    lahoreEmp2,
+    lahoreSalesHead,
+    lahoreSales,
     dubaiHr,
+    dubaiLead,
     dubaiEmp,
-    financeOfficer,
+    dubaiEmp2,
+    dubaiSales,
   ];
 
   for (const user of allEmployees) {
     for (const lt of leaveTypes) {
+      const used =
+        lt.code === "ANNUAL"
+          ? user.id === emp1.id
+            ? 5
+            : user.id === emp2.id
+              ? 4
+              : user.id === onLeaveEmp.id
+                ? 8
+                : 2
+          : lt.code === "SICK"
+            ? user.id === emp3.id
+              ? 2
+              : 0
+            : lt.code === "CASUAL"
+              ? user.id === engQa.id
+                ? 1
+                : 0
+              : 0;
+
       await prisma.leaveBalance.create({
         data: {
           userId: user.id,
           leaveTypeId: lt.id,
           year,
           allotted: lt.defaultAnnualQuota,
-          used: lt.code === "ANNUAL" ? 2 : 0,
+          used,
         },
       });
     }
@@ -427,13 +659,15 @@ async function main() {
 
   const annual = leaveTypes.find((l) => l.code === "ANNUAL")!;
   const sick = leaveTypes.find((l) => l.code === "SICK")!;
+  const casual = leaveTypes.find((l) => l.code === "CASUAL")!;
+  const wfh = leaveTypes.find((l) => l.code === "WFH")!;
 
-  const pendingReq = await prisma.leaveRequest.create({
+  await prisma.leaveRequest.create({
     data: {
       userId: emp1.id,
       leaveTypeId: annual.id,
-      startDate: new Date(`${year}-10-05`),
-      endDate: new Date(`${year}-10-07`),
+      startDate: daysFromToday(10),
+      endDate: daysFromToday(12),
       totalDays: 3,
       reason: "Family wedding in Lahore",
       status: LeaveRequestStatus.PENDING,
@@ -448,14 +682,14 @@ async function main() {
     },
   });
 
-  const escalatedReq = await prisma.leaveRequest.create({
+  await prisma.leaveRequest.create({
     data: {
       userId: emp2.id,
       leaveTypeId: annual.id,
-      startDate: new Date(`${year}-11-10`),
-      endDate: new Date(`${year}-11-17`),
+      startDate: daysFromToday(18),
+      endDate: daysFromToday(25),
       totalDays: 6,
-      reason: "Extended annual vacation",
+      reason: "Extended annual vacation with family",
       status: LeaveRequestStatus.PENDING_L2,
       currentApprovalStep: 2,
       approvalSteps: {
@@ -464,8 +698,8 @@ async function main() {
             approverId: teamLead.id,
             level: 1,
             decision: ApprovalDecision.APPROVED,
-            comment: "Team coverage arranged",
-            decidedAt: new Date(),
+            comment: "Team coverage arranged with Danish",
+            decidedAt: daysFromToday(-1),
           },
           {
             approverId: engHead.id,
@@ -481,10 +715,10 @@ async function main() {
     data: {
       userId: emp3.id,
       leaveTypeId: sick.id,
-      startDate: new Date(`${year}-09-01`),
-      endDate: new Date(`${year}-09-02`),
+      startDate: daysFromToday(-12),
+      endDate: daysFromToday(-11),
       totalDays: 2,
-      reason: "Medical recovery",
+      reason: "Medical recovery after fever",
       status: LeaveRequestStatus.APPROVED,
       currentApprovalStep: 1,
       approvalSteps: {
@@ -492,19 +726,155 @@ async function main() {
           approverId: salesHead.id,
           level: 1,
           decision: ApprovalDecision.APPROVED,
-          comment: "Approved",
-          decidedAt: new Date(`${year}-08-28`),
+          comment: "Get well soon",
+          decidedAt: daysFromToday(-14),
         },
       },
     },
   });
 
-  void pendingReq;
-  void escalatedReq;
+  await prisma.leaveRequest.create({
+    data: {
+      userId: engQa.id,
+      leaveTypeId: casual.id,
+      startDate: daysFromToday(3),
+      endDate: daysFromToday(3),
+      totalDays: 1,
+      reason: "Personal errand at NADRA office",
+      status: LeaveRequestStatus.APPROVED,
+      currentApprovalStep: 1,
+      approvalSteps: {
+        create: {
+          approverId: teamLead.id,
+          level: 1,
+          decision: ApprovalDecision.APPROVED,
+          comment: "Approved",
+          decidedAt: daysFromToday(-2),
+        },
+      },
+    },
+  });
+
+  await prisma.leaveRequest.create({
+    data: {
+      userId: engJunior.id,
+      leaveTypeId: annual.id,
+      startDate: daysFromToday(2),
+      endDate: daysFromToday(4),
+      totalDays: 3,
+      reason: "Travel to Islamabad for family event",
+      status: LeaveRequestStatus.APPROVED,
+      currentApprovalStep: 1,
+      approvalSteps: {
+        create: {
+          approverId: teamLead.id,
+          level: 1,
+          decision: ApprovalDecision.APPROVED,
+          comment: "Coverage confirmed",
+          decidedAt: daysFromToday(-3),
+        },
+      },
+    },
+  });
+
+  await prisma.leaveRequest.create({
+    data: {
+      userId: onLeaveEmp.id,
+      leaveTypeId: annual.id,
+      startDate: daysFromToday(-3),
+      endDate: daysFromToday(4),
+      totalDays: 6,
+      reason: "Pre-approved annual leave block",
+      status: LeaveRequestStatus.APPROVED,
+      currentApprovalStep: 2,
+      approvalSteps: {
+        create: [
+          {
+            approverId: teamLead.id,
+            level: 1,
+            decision: ApprovalDecision.APPROVED,
+            decidedAt: daysFromToday(-10),
+          },
+          {
+            approverId: engHead.id,
+            level: 2,
+            decision: ApprovalDecision.APPROVED,
+            comment: "Approved at department level",
+            decidedAt: daysFromToday(-9),
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.leaveRequest.create({
+    data: {
+      userId: lahoreEmp.id,
+      leaveTypeId: wfh.id,
+      startDate: daysFromToday(1),
+      endDate: daysFromToday(1),
+      totalDays: 1,
+      reason: "Home internet installation appointment",
+      status: LeaveRequestStatus.PENDING,
+      currentApprovalStep: 1,
+      approvalSteps: {
+        create: {
+          approverId: lahoreLead.id,
+          level: 1,
+          decision: ApprovalDecision.PENDING,
+        },
+      },
+    },
+  });
+
+  await prisma.leaveRequest.create({
+    data: {
+      userId: dubaiEmp.id,
+      leaveTypeId: annual.id,
+      startDate: daysFromToday(7),
+      endDate: daysFromToday(9),
+      totalDays: 3,
+      reason: "Visit family in Pakistan",
+      status: LeaveRequestStatus.APPROVED,
+      currentApprovalStep: 1,
+      approvalSteps: {
+        create: {
+          approverId: dubaiLead.id,
+          level: 1,
+          decision: ApprovalDecision.APPROVED,
+          decidedAt: daysFromToday(-4),
+        },
+      },
+    },
+  });
+
+  await prisma.leaveRequest.create({
+    data: {
+      userId: salesExec2.id,
+      leaveTypeId: casual.id,
+      startDate: daysFromToday(-20),
+      endDate: daysFromToday(-20),
+      totalDays: 1,
+      reason: "Same-day personal leave",
+      status: LeaveRequestStatus.REJECTED,
+      currentApprovalStep: 1,
+      approvalSteps: {
+        create: {
+          approverId: salesHead.id,
+          level: 1,
+          decision: ApprovalDecision.REJECTED,
+          comment: "Client visit already scheduled that day",
+          decidedAt: daysFromToday(-21),
+        },
+      },
+    },
+  });
 
   const pkHolidays = [
     { name: "Pakistan Day", date: new Date(`${year}-03-23`) },
     { name: "Labour Day", date: new Date(`${year}-05-01`) },
+    { name: "Eid-ul-Fitr (observed)", date: new Date(`${year}-03-31`) },
+    { name: "Eid-ul-Adha (observed)", date: new Date(`${year}-06-07`) },
     { name: "Independence Day", date: new Date(`${year}-08-14`) },
     { name: "Iqbal Day", date: new Date(`${year}-11-09`) },
     { name: "Quaid-e-Azam Day", date: new Date(`${year}-12-25`) },
@@ -518,44 +888,88 @@ async function main() {
     }
   }
 
-  await prisma.holiday.create({
-    data: {
-      subsidiaryId: dubai.id,
-      name: "UAE National Day",
-      date: new Date(`${year}-12-02`),
-    },
-  });
-  await prisma.holiday.create({
-    data: {
-      subsidiaryId: dubai.id,
-      name: "New Year's Day",
-      date: new Date(`${year}-01-01`),
-    },
-  });
+  for (const h of [
+    { name: "New Year's Day", date: new Date(`${year}-01-01`) },
+    { name: "Eid-ul-Fitr (UAE)", date: new Date(`${year}-03-31`) },
+    { name: "Arafat Day", date: new Date(`${year}-06-05`) },
+    { name: "UAE National Day", date: new Date(`${year}-12-02`) },
+  ]) {
+    await prisma.holiday.create({
+      data: { subsidiaryId: dubai.id, name: h.name, date: h.date },
+    });
+  }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  for (const user of [emp1, emp2, emp3, teamLead, engHead]) {
+  const attendanceUsers = [
+    emp1,
+    emp2,
+    engQa,
+    engJunior,
+    teamLead,
+    engHead,
+    salesHead,
+    emp3,
+    salesExec2,
+    financeOfficer,
+    accountant,
+    hrOfficer,
+    lahoreLead,
+    lahoreEmp,
+    lahoreEmp2,
+    dubaiLead,
+    dubaiEmp,
+    dubaiEmp2,
+  ];
+
+  for (let offset = 0; offset < 12; offset++) {
+    const day = daysFromToday(-offset);
+    const weekday = day.getDay();
+    if (weekday === 0 || weekday === 6) continue;
+
+    for (const user of attendanceUsers) {
+      if (user.id === onLeaveEmp.id) continue;
+      if (user.id === emp3.id && (offset === 11 || offset === 12)) {
+        continue;
+      }
+
+      const remote = user.id === dubaiEmp2.id && offset % 4 === 0;
+      const status = remote ? AttendanceStatus.REMOTE : AttendanceStatus.PRESENT;
+      await prisma.attendance.create({
+        data: {
+          userId: user.id,
+          date: day,
+          status,
+          checkInAt: withTime(day, 9, 5 + (offset % 20)),
+          checkOutAt: offset === 0 ? null : withTime(day, 18, 10 + (offset % 25)),
+          note: remote ? "Remote day" : null,
+        },
+      });
+    }
+  }
+
+  for (const day of [daysFromToday(-12), daysFromToday(-11)]) {
     await prisma.attendance.create({
       data: {
-        userId: user.id,
-        date: today,
-        status: AttendanceStatus.PRESENT,
+        userId: emp3.id,
+        date: day,
+        status: AttendanceStatus.LEAVE,
+        note: "Sick leave",
       },
     });
   }
+
   await prisma.attendance.create({
     data: {
-      userId: emp3.id,
-      date: new Date(`${year}-09-01`),
+      userId: onLeaveEmp.id,
+      date: daysFromToday(0),
       status: AttendanceStatus.LEAVE,
+      note: "On approved annual leave",
     },
   });
 
   await prisma.announcement.create({
     data: {
       title: "Welcome to Cellutech HRMS",
-      body: "Our multi-subsidiary HR platform is live. Please keep your profiles updated and submit leave requests through the portal.",
+      body: "Please keep your profile details current and submit leave through this portal. For policy documents, open the Policies section.",
       scope: AnnouncementScope.GLOBAL,
       createdById: admin.id,
     },
@@ -563,44 +977,138 @@ async function main() {
 
   await prisma.announcement.create({
     data: {
-      title: "Karachi Office - Friday schedule",
-      body: "Karachi HQ will operate half-day this Friday for facility maintenance.",
+      title: "Karachi HQ - parking level update",
+      body: "Basement parking on Level B2 is closed for waterproofing until Friday. Use visitor parking with your staff card.",
       scope: AnnouncementScope.SUBSIDIARY,
       subsidiaryId: karachi.id,
       createdById: hrKarachi.id,
     },
   });
 
-  await prisma.notification.create({
+  await prisma.announcement.create({
     data: {
-      userId: teamLead.id,
-      title: "Leave approval needed",
-      message: "Usman Raza requested 3 days of Annual Leave.",
-      link: "/leave/approvals",
+      title: "Lahore Office - Ramadan working hours",
+      body: "During Ramadan, Lahore office hours are 9:00 to 15:30. Please adjust client meetings accordingly.",
+      scope: AnnouncementScope.SUBSIDIARY,
+      subsidiaryId: lahore.id,
+      createdById: hrLahore.id,
     },
   });
 
-  await prisma.notification.create({
+  await prisma.announcement.create({
     data: {
-      userId: engHead.id,
-      title: "Escalated leave approval",
-      message: "Sara Sheikh's 6-day Annual Leave needs Level-2 approval.",
-      link: "/leave/approvals",
+      title: "Dubai Office - visa document refresh",
+      body: "Please upload an updated passport copy to your employee profile before month end.",
+      scope: AnnouncementScope.SUBSIDIARY,
+      subsidiaryId: dubai.id,
+      createdById: dubaiHr.id,
     },
   });
 
-  await prisma.notification.create({
-    data: {
-      userId: emp3.id,
-      title: "Leave approved",
-      message: "Your sick leave request has been approved.",
-      link: "/leave/my-requests",
-      isRead: true,
-    },
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: teamLead.id,
+        title: "Leave approval needed",
+        message: "Usman Raza requested 3 days of Annual Leave.",
+        link: "/leave/approvals",
+      },
+      {
+        userId: engHead.id,
+        title: "Escalated leave approval",
+        message: "Sara Sheikh's 6-day Annual Leave needs Level-2 approval.",
+        link: "/leave/approvals",
+      },
+      {
+        userId: emp3.id,
+        title: "Leave approved",
+        message: "Your sick leave request has been approved.",
+        link: "/leave/my-requests",
+        isRead: true,
+      },
+      {
+        userId: lahoreLead.id,
+        title: "Leave approval needed",
+        message: "Omar Farooq requested Work From Home for tomorrow.",
+        link: "/leave/approvals",
+      },
+      {
+        userId: emp1.id,
+        title: "Reminder",
+        message: "Your pending leave request is waiting for manager review.",
+        link: "/leave/my-requests",
+      },
+      {
+        userId: salesExec2.id,
+        title: "Leave rejected",
+        message: "Your casual leave request was rejected. See comments in My Leave.",
+        link: "/leave/my-requests",
+        isRead: true,
+      },
+      {
+        userId: hrKarachi.id,
+        title: "Headcount note",
+        message: "One Karachi employee is currently marked On Leave. Review attendance if needed.",
+        link: "/attendance",
+      },
+    ],
   });
+
+  const policyDir = path.join(process.cwd(), "uploads", "policies");
+  fs.mkdirSync(policyDir, { recursive: true });
+
+  const policies = [
+    {
+      title: "Employee Code of Conduct",
+      category: "HR Policy",
+      description: "Expected workplace behaviour and ethics for all Cellutech staff.",
+      fileName: "code-of-conduct.txt",
+      scope: AnnouncementScope.GLOBAL,
+      subsidiaryId: null as string | null,
+      body: "Cellutech Employee Code of Conduct\n\nTreat colleagues with respect, protect confidential information, and follow local labour laws in each subsidiary.",
+    },
+    {
+      title: "Leave and Attendance Policy",
+      category: "Leave",
+      description: "How leave balances, approvals, and attendance punches are handled.",
+      fileName: "leave-attendance-policy.txt",
+      scope: AnnouncementScope.GLOBAL,
+      subsidiaryId: null,
+      body: "Leave requests must be submitted in HRMS. Managers approve Level 1. Escalated leave requires Department Head approval.",
+    },
+    {
+      title: "Karachi Office Safety Guidelines",
+      category: "Facilities",
+      description: "Building access, fire exits, and visitor process for Karachi HQ.",
+      fileName: "karachi-safety.txt",
+      scope: AnnouncementScope.SUBSIDIARY,
+      subsidiaryId: karachi.id,
+      body: "Karachi HQ Safety Guidelines\n\nAlways wear your staff badge. Report incidents to Facilities and HR on the same day.",
+    },
+  ];
+
+  for (const policy of policies) {
+    const storagePath = path.join(policyDir, `${Date.now()}-${policy.fileName}`);
+    fs.writeFileSync(storagePath, policy.body, "utf8");
+    await prisma.policyDocument.create({
+      data: {
+        title: policy.title,
+        category: policy.category,
+        description: policy.description,
+        fileName: policy.fileName,
+        mimeType: "text/plain",
+        sizeBytes: Buffer.byteLength(policy.body),
+        storagePath,
+        scope: policy.scope,
+        subsidiaryId: policy.subsidiaryId,
+        uploadedById: policy.subsidiaryId === karachi.id ? hrKarachi.id : admin.id,
+      },
+    });
+  }
 
   console.log("Seed completed successfully.");
   console.log("Demo password for all users:", PASSWORD);
+  console.log("Active employees seeded:", allEmployees.length);
   console.log("Key logins:");
   console.log("  Super Admin: seher.siddique@hrms.pk");
   console.log("  HR Manager:  hr.karachi@hrms.pk");

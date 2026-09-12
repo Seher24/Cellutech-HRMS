@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { MarkReadButton } from "@/components/notifications/mark-read-button";
 import Link from "next/link";
+import { formatDateTime } from "@/lib/format";
 
 export default async function NotificationsPage() {
   const session = await auth();
@@ -13,6 +14,14 @@ export default async function NotificationsPage() {
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+
+  const subsidiary = session.user.subsidiaryId
+    ? await prisma.subsidiary.findUnique({
+        where: { id: session.user.subsidiaryId },
+        select: { timezone: true },
+      })
+    : null;
+  const timeZone = subsidiary?.timezone ?? "Asia/Karachi";
 
   return (
     <div className="space-y-6">
@@ -41,7 +50,7 @@ export default async function NotificationsPage() {
                 <p className="font-medium text-slate-900 break-words">{n.title}</p>
                 <p className="text-sm text-slate-600 break-words">{n.message}</p>
                 <p className="mt-1 text-xs text-slate-400">
-                  {n.createdAt.toLocaleString()}
+                  {formatDateTime(n.createdAt, timeZone)}
                 </p>
               </div>
               {n.link && (

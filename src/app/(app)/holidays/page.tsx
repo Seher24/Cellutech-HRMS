@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/rbac";
 import { HolidayForm } from "@/components/holidays/holiday-form";
 import { ResponsiveTable } from "@/components/ui/responsive-table";
+import { formatDate } from "@/lib/format";
 
 export default async function HolidaysPage({
   searchParams,
@@ -34,6 +35,8 @@ export default async function HolidaysPage({
   });
 
   const canManage = hasPermission(session.user.role, "manage_holidays");
+  const activeSub = subsidiaries.find((s) => s.id === subsidiaryId);
+  const timeZone = activeSub?.timezone ?? "Asia/Karachi";
 
   return (
     <div className="space-y-6">
@@ -89,7 +92,7 @@ export default async function HolidaysPage({
               <tr key={h.id} className="border-b border-slate-100">
                 <td className="px-4 py-3 font-medium">{h.name}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  {h.date.toLocaleDateString()}
+                  {formatDate(h.date, timeZone)}
                 </td>
               </tr>
             ))}
