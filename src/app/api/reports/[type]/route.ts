@@ -33,6 +33,8 @@ async function assertCanExport() {
   if (
     user.role !== RoleName.SUPER_ADMIN &&
     user.role !== RoleName.HR_MANAGER &&
+    user.role !== RoleName.DEPARTMENT_HEAD &&
+    user.role !== RoleName.FINANCE &&
     !hasPermission(user.role, "view_subsidiary_dashboard")
   ) {
     throw new Error("Forbidden");
