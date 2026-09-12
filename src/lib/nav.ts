@@ -11,6 +11,7 @@ import {
   UserRound,
   FileDown,
   Megaphone,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 import { RoleName } from "@prisma/client";
@@ -50,12 +51,14 @@ export function getNavForRole(role: RoleName): NavItem[] {
   if (
     role === RoleName.SUPER_ADMIN ||
     role === RoleName.HR_MANAGER ||
-    role === RoleName.DEPARTMENT_HEAD
+    role === RoleName.DEPARTMENT_HEAD ||
+    role === RoleName.FINANCE
   ) {
     base.push({ title: "Reports", href: "/reports", icon: FileDown });
   }
 
   base.push(
+    { title: "Policies", href: "/policies", icon: FolderOpen },
     { title: "Holidays", href: "/holidays", icon: Calendar },
     { title: "Attendance", href: "/attendance", icon: ClipboardCheck },
     { title: "Notifications", href: "/notifications", icon: Bell }
