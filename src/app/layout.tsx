@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cellutech HRMS",
   description: "Multi-subsidiary Human Resource Management System",
+  icons: {
+    icon: [{ url: "/logo-black.png", type: "image/png" }],
+    apple: [{ url: "/logo-black.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({

@@ -6,6 +6,8 @@ import { RoleName } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { getNavForRole } from "@/lib/nav";
 import { displayRole } from "@/lib/rbac";
+import { CellutechLogo } from "@/components/brand/cellutech-logo";
+import { MadeByCredit } from "@/components/brand/made-by-credit";
 
 export function AppSidebar({
   role,
@@ -18,13 +20,10 @@ export function AppSidebar({
   const items = getNavForRole(role);
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-slate-800/80 bg-[#0b1220] text-slate-100">
+    <aside className="flex h-full min-h-0 w-64 shrink-0 flex-col border-r border-slate-800/80 bg-[#0b1220] text-slate-100">
       <div className="border-b border-slate-800 px-5 py-5">
-        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-400">
-          Cellutech
-        </div>
-        <div className="mt-1 text-lg font-semibold tracking-tight">HRMS</div>
-        <p className="mt-2 truncate text-xs text-slate-400">{userName}</p>
+        <CellutechLogo size="md" showWordmark />
+        <p className="mt-3 truncate text-xs text-slate-400">{userName}</p>
         <p className="text-[11px] text-teal-300/90">{displayRole(role)}</p>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -49,8 +48,9 @@ export function AppSidebar({
           );
         })}
       </nav>
-      <div className="border-t border-slate-800 p-4 text-[11px] text-slate-500">
-        Multi-subsidiary HR platform
+      <div className="border-t border-slate-800 p-4 space-y-1">
+        <p className="text-[11px] text-slate-500">Multi-subsidiary HR platform</p>
+        <MadeByCredit />
       </div>
     </aside>
   );
