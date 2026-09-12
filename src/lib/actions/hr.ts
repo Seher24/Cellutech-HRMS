@@ -131,6 +131,7 @@ const orgSchema = z.object({
   name: z.string().min(1),
   city: z.string().min(1),
   countryId: z.string().min(1),
+  companyId: z.string().min(1),
   timezone: z.string().min(1),
   currency: z.string().min(1),
 });
@@ -140,6 +141,43 @@ export async function createSubsidiaryAction(input: z.infer<typeof orgSchema>) {
   requirePermission(actor, "manage_subsidiaries");
   const data = orgSchema.parse(input);
   await prisma.subsidiary.create({ data });
+  revalidatePath("/organization");
+  return { success: true };
+}
+
+export async function updateSubsidiaryAction(input: {
+  id: string;
+  name: string;
+  city: string;
+  timezone: string;
+  currency: string;
+  isActive: boolean;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_subsidiaries");
+  await prisma.subsidiary.update({
+    where: { id: input.id },
+    data: {
+      name: input.name,
+      city: input.city,
+      timezone: input.timezone,
+      currency: input.currency,
+      isActive: input.isActive,
+    },
+  });
+  revalidatePath("/organization");
+  return { success: true };
+}
+
+export async function createCompanyAction(input: {
+  name: string;
+  legalName?: string;
+}) {
+  const actor = await requireSession();
+  requirePermission(actor, "manage_countries");
+  await prisma.company.create({
+    data: { name: input.name, legalName: input.legalName || null },
+  });
   revalidatePath("/organization");
   return { success: true };
 }

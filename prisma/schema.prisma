@@ -48,6 +48,15 @@ enum AnnouncementScope {
   SUBSIDIARY
 }
 
+model Company {
+  id           String       @id @default(cuid())
+  name         String
+  legalName    String?
+  subsidiaries Subsidiary[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
 model Country {
   id           String       @id @default(cuid())
   name         String
@@ -64,16 +73,20 @@ model Subsidiary {
   timezone      String
   currency      String
   isActive      Boolean        @default(true)
+  companyId     String
+  company       Company        @relation(fields: [companyId], references: [id])
   countryId     String
   country       Country        @relation(fields: [countryId], references: [id])
   departments   Department[]
   users         User[]
   holidays      Holiday[]
   announcements Announcement[]
+  policyDocuments PolicyDocument[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@index([countryId])
+  @@index([companyId])
 }
 
 model Department {
@@ -283,4 +296,22 @@ model EmployeeDocument {
   createdAt    DateTime @default(now())
 
   @@index([userId])
+}
+
+model PolicyDocument {
+  id           String      @id @default(cuid())
+  title        String
+  category     String
+  description  String?
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  storagePath  String
+  scope        AnnouncementScope @default(GLOBAL)
+  subsidiaryId String?
+  subsidiary   Subsidiary? @relation(fields: [subsidiaryId], references: [id])
+  uploadedById String
+  createdAt    DateTime    @default(now())
+
+  @@index([subsidiaryId])
 }

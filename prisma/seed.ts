@@ -19,6 +19,7 @@ async function main() {
   await prisma.department.deleteMany();
   await prisma.subsidiary.deleteMany();
   await prisma.country.deleteMany();
+  await prisma.company.deleteMany();
   await prisma.leaveType.deleteMany();
   await prisma.role.deleteMany();
 
@@ -44,6 +45,13 @@ async function main() {
     string
   >;
 
+  const company = await prisma.company.create({
+    data: {
+      name: "Cellutech",
+      legalName: "Cellutech Private Limited",
+    },
+  });
+
   const pakistan = await prisma.country.create({
     data: { name: "Pakistan", code: "PK" },
   });
@@ -58,6 +66,7 @@ async function main() {
       timezone: "Asia/Karachi",
       currency: "PKR",
       countryId: pakistan.id,
+      companyId: company.id,
     },
   });
   const lahore = await prisma.subsidiary.create({
@@ -67,6 +76,7 @@ async function main() {
       timezone: "Asia/Karachi",
       currency: "PKR",
       countryId: pakistan.id,
+      companyId: company.id,
     },
   });
   const dubai = await prisma.subsidiary.create({
@@ -76,6 +86,7 @@ async function main() {
       timezone: "Asia/Dubai",
       currency: "AED",
       countryId: uae.id,
+      companyId: company.id,
     },
   });
 

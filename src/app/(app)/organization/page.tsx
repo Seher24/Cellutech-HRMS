@@ -14,14 +14,19 @@ export default async function OrganizationPage() {
     redirect("/dashboard");
   }
 
-  const [countries, subsidiaries, departments] = await Promise.all([
+  const [companies, countries, subsidiaries, departments] = await Promise.all([
+    prisma.company.findMany({ orderBy: { name: "asc" } }),
     prisma.country.findMany({ orderBy: { name: "asc" } }),
     prisma.subsidiary.findMany({
       where:
         session.user.role === RoleName.SUPER_ADMIN
           ? {}
           : { id: session.user.subsidiaryId ?? undefined },
-      include: { country: true, _count: { select: { departments: true, users: true } } },
+      include: {
+        country: true,
+        company: true,
+        _count: { select: { departments: true, users: true } },
+      },
       orderBy: { name: "asc" },
     }),
     prisma.department.findMany({
@@ -43,11 +48,22 @@ export default async function OrganizationPage() {
       <div>
         <h2 className="text-2xl font-semibold text-slate-900">Organization</h2>
         <p className="text-sm text-slate-500">
-          Countries, subsidiaries, departments, and designations
+          Company, countries, subsidiaries, departments, and designations
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="font-semibold">Company</h3>
+          <ul className="mt-3 space-y-2 text-sm">
+            {companies.map((c) => (
+              <li key={c.id}>
+                <div className="font-medium">{c.name}</div>
+                <div className="text-xs text-slate-500">{c.legalName ?? "Parent entity"}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="font-semibold">Countries</h3>
           <ul className="mt-3 space-y-2 text-sm">
@@ -64,9 +80,14 @@ export default async function OrganizationPage() {
           <ul className="mt-3 space-y-2 text-sm">
             {subsidiaries.map((s) => (
               <li key={s.id}>
-                <div className="font-medium">{s.name}</div>
+                <div className="font-medium">
+                  {s.name}{" "}
+                  <span className="text-xs font-normal text-slate-500">
+                    ({s.isActive ? "Active" : "Inactive"})
+                  </span>
+                </div>
                 <div className="text-xs text-slate-500">
-                  {s.city}, {s.country.name} · {s.currency} · {s.timezone} ·{" "}
+                  {s.company.name} · {s.city}, {s.country.name} · {s.currency} · {s.timezone} ·{" "}
                   {s._count.users} employees
                 </div>
               </li>
@@ -97,8 +118,17 @@ export default async function OrganizationPage() {
 
       <OrganizationForms
         isSuperAdmin={session.user.role === RoleName.SUPER_ADMIN}
+        companies={companies.map((c) => ({ id: c.id, name: c.name }))}
         countries={countries.map((c) => ({ id: c.id, name: c.name }))}
         subsidiaries={subsidiaries.map((s) => ({ id: s.id, name: s.name }))}
+        subsidiaryDetails={subsidiaries.map((s) => ({
+          id: s.id,
+          name: s.name,
+          city: s.city,
+          timezone: s.timezone,
+          currency: s.currency,
+          isActive: s.isActive,
+        }))}
         departments={departments.map((d) => ({ id: d.id, name: d.name }))}
         defaultSubsidiaryId={session.user.subsidiaryId}
       />
