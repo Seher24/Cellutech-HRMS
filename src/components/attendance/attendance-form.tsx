@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { upsertAttendanceAction } from "@/lib/actions/hr";
+import { punchAttendanceAction, upsertAttendanceAction } from "@/lib/actions/hr";
 import { Button } from "@/components/ui/button";
 
 const STATUSES = ["PRESENT", "ABSENT", "LEAVE", "HOLIDAY", "REMOTE"] as const;
@@ -10,43 +10,83 @@ const STATUSES = ["PRESENT", "ABSENT", "LEAVE", "HOLIDAY", "REMOTE"] as const;
 export function AttendanceForm({
   userId,
   currentStatus,
+  checkInAt,
+  checkOutAt,
 }: {
   userId: string;
   currentStatus: string | null;
+  checkInAt: string | null;
+  checkOutAt: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
-      <h3 className="font-semibold text-slate-900">Mark today&apos;s status</h3>
-      <p className="mt-1 text-sm text-slate-500">
-        Current: {currentStatus ?? "Not marked"}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {STATUSES.map((status) => (
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h3 className="font-semibold text-slate-900">Timesheet punch</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Check-in: {checkInAt ?? "Not yet"} · Check-out: {checkOutAt ?? "Not yet"}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button
-            key={status}
-            disabled={pending}
-            variant={currentStatus === status ? "default" : "outline"}
-            className={
-              currentStatus === status ? "bg-teal-700 hover:bg-teal-800" : ""
-            }
+            disabled={pending || !!checkInAt}
+            className="bg-teal-700 hover:bg-teal-800"
             onClick={() => {
               startTransition(async () => {
-                await upsertAttendanceAction({
-                  userId,
-                  date: today,
-                  status,
-                });
+                await punchAttendanceAction({ type: "IN" });
                 router.refresh();
               });
             }}
           >
-            {status}
+            Check in
           </Button>
-        ))}
+          <Button
+            disabled={pending || !checkInAt || !!checkOutAt}
+            variant="outline"
+            onClick={() => {
+              startTransition(async () => {
+                const result = await punchAttendanceAction({ type: "OUT" });
+                if (result?.error) alert(result.error);
+                router.refresh();
+              });
+            }}
+          >
+            Check out
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <h3 className="font-semibold text-slate-900">Mark today&apos;s status</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Current: {currentStatus ?? "Not marked"}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {STATUSES.map((status) => (
+            <Button
+              key={status}
+              disabled={pending}
+              variant={currentStatus === status ? "default" : "outline"}
+              className={
+                currentStatus === status ? "bg-teal-700 hover:bg-teal-800" : ""
+              }
+              onClick={() => {
+                startTransition(async () => {
+                  await upsertAttendanceAction({
+                    userId,
+                    date: today,
+                    status,
+                  });
+                  router.refresh();
+                });
+              }}
+            >
+              {status}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );

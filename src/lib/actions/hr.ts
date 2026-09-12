@@ -252,6 +252,8 @@ export async function upsertAttendanceAction(input: {
   date: string;
   status: "PRESENT" | "ABSENT" | "LEAVE" | "HOLIDAY" | "REMOTE";
   note?: string;
+  checkInAt?: string;
+  checkOutAt?: string;
 }) {
   const actor = await requireSession();
   if (
@@ -264,6 +266,9 @@ export async function upsertAttendanceAction(input: {
   const date = new Date(input.date);
   date.setHours(0, 0, 0, 0);
 
+  const checkInAt = input.checkInAt ? new Date(input.checkInAt) : undefined;
+  const checkOutAt = input.checkOutAt ? new Date(input.checkOutAt) : undefined;
+
   await prisma.attendance.upsert({
     where: {
       userId_date: { userId: input.userId, date },
@@ -273,12 +278,57 @@ export async function upsertAttendanceAction(input: {
       date,
       status: input.status,
       note: input.note,
+      checkInAt,
+      checkOutAt,
     },
     update: {
       status: input.status,
       note: input.note,
+      ...(checkInAt !== undefined ? { checkInAt } : {}),
+      ...(checkOutAt !== undefined ? { checkOutAt } : {}),
     },
   });
+
+  revalidatePath("/attendance");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function punchAttendanceAction(input: {
+  type: "IN" | "OUT";
+}) {
+  const actor = await requireSession();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+
+  const existing = await prisma.attendance.findUnique({
+    where: { userId_date: { userId: actor.id, date: today } },
+  });
+
+  if (input.type === "IN") {
+    await prisma.attendance.upsert({
+      where: { userId_date: { userId: actor.id, date: today } },
+      create: {
+        userId: actor.id,
+        date: today,
+        status: "PRESENT",
+        checkInAt: now,
+      },
+      update: {
+        status: "PRESENT",
+        checkInAt: existing?.checkInAt ?? now,
+      },
+    });
+  } else {
+    if (!existing?.checkInAt) {
+      return { error: "Check in before checking out" };
+    }
+    await prisma.attendance.update({
+      where: { userId_date: { userId: actor.id, date: today } },
+      data: { checkOutAt: now, status: "PRESENT" },
+    });
+  }
 
   revalidatePath("/attendance");
   revalidatePath("/dashboard");

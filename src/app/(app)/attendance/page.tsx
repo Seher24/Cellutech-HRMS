@@ -14,7 +14,8 @@ export default async function AttendancePage() {
   const userFilter =
     session.user.role === RoleName.SUPER_ADMIN
       ? {}
-      : session.user.role === RoleName.HR_MANAGER
+      : session.user.role === RoleName.HR_MANAGER ||
+          session.user.role === RoleName.FINANCE
         ? { subsidiaryId: session.user.subsidiaryId }
         : session.user.role === RoleName.DEPARTMENT_HEAD
           ? { departmentId: session.user.departmentId }
@@ -42,15 +43,17 @@ export default async function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Attendance</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Attendance and timesheet</h2>
         <p className="text-sm text-slate-500">
-          Simplified daily status (present / absent / leave / holiday / remote)
+          Daily status plus check-in / check-out timestamps for payroll-ready records
         </p>
       </div>
 
       <AttendanceForm
         userId={session.user.id}
         currentStatus={myToday?.status ?? null}
+        checkInAt={myToday?.checkInAt?.toLocaleTimeString() ?? null}
+        checkOutAt={myToday?.checkOutAt?.toLocaleTimeString() ?? null}
       />
 
       <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
@@ -60,13 +63,15 @@ export default async function AttendancePage() {
               <th className="px-4 py-3">Employee</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Check in</th>
+              <th className="px-4 py-3">Check out</th>
               <th className="px-4 py-3">Note</th>
             </tr>
           </thead>
           <tbody>
             {records.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                   No attendance records in the last 7 days.
                 </td>
               </tr>
@@ -78,6 +83,12 @@ export default async function AttendancePage() {
                 </td>
                 <td className="px-4 py-3">{r.date.toLocaleDateString()}</td>
                 <td className="px-4 py-3">{r.status}</td>
+                <td className="px-4 py-3">
+                  {r.checkInAt ? r.checkInAt.toLocaleTimeString() : "-"}
+                </td>
+                <td className="px-4 py-3">
+                  {r.checkOutAt ? r.checkOutAt.toLocaleTimeString() : "-"}
+                </td>
                 <td className="px-4 py-3 text-slate-500">{r.note ?? "-"}</td>
               </tr>
             ))}
