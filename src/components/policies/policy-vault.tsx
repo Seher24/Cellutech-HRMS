@@ -45,19 +45,19 @@ export function PolicyVault({
         )}
         {items.map((item) => (
           <div key={item.id} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h3 className="font-semibold">{item.title}</h3>
-                <p className="text-xs text-slate-500">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="font-semibold break-words">{item.title}</h3>
+                <p className="text-xs text-slate-500 break-words">
                   {item.category} · {item.scope}
                   {item.subsidiaryName ? ` / ${item.subsidiaryName}` : ""} · {item.fileName} ·{" "}
                   {item.createdAt}
                 </p>
                 {item.description && (
-                  <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                  <p className="mt-1 text-sm text-slate-600 break-words">{item.description}</p>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <a href={`/api/policies/${item.id}`}>
                   <Button variant="outline" size="sm">
                     Download

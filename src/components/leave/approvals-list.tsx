@@ -88,12 +88,12 @@ export function ApprovalsList({ items }: { items: ApprovalItem[] }) {
               setComments((c) => ({ ...c, [item.id]: e.target.value }))
             }
           />
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {(item.isCurrentApprover || item.canOverride) && (
               <>
                 <Button
                   disabled={pending}
-                  className="bg-teal-700 hover:bg-teal-800"
+                  className="w-full bg-teal-700 hover:bg-teal-800 sm:w-auto"
                   onClick={() =>
                     decide(item.id, "APPROVED", !item.isCurrentApprover && item.canOverride)
                   }
@@ -103,6 +103,7 @@ export function ApprovalsList({ items }: { items: ApprovalItem[] }) {
                 <Button
                   disabled={pending}
                   variant="destructive"
+                  className="w-full sm:w-auto"
                   onClick={() =>
                     decide(item.id, "REJECTED", !item.isCurrentApprover && item.canOverride)
                   }
@@ -115,6 +116,7 @@ export function ApprovalsList({ items }: { items: ApprovalItem[] }) {
               <Button
                 disabled={pending}
                 variant="outline"
+                className="w-full sm:w-auto"
                 onClick={() => decide(item.id, "APPROVED", true)}
               >
                 HR Override Approve

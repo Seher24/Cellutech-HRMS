@@ -42,7 +42,7 @@ export default async function ApprovalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Leave approvals</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Leave approvals</h2>
         <p className="text-sm text-slate-500">
           Level-1 manager approval with automatic escalation when required
         </p>

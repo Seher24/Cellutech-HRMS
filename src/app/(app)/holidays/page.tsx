@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/rbac";
 import { HolidayForm } from "@/components/holidays/holiday-form";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 
 export default async function HolidaysPage({
   searchParams,
@@ -36,19 +37,21 @@ export default async function HolidaysPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Holiday calendar</h2>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">
+            Holiday calendar
+          </h2>
           <p className="text-sm text-slate-500">
             Subsidiary-specific public holidays excluded from leave calculations
           </p>
         </div>
         {session.user.role === RoleName.SUPER_ADMIN && (
-          <form className="flex gap-2">
+          <form className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <select
               name="subsidiaryId"
               defaultValue={subsidiaryId ?? ""}
-              className="h-9 rounded-lg border bg-white px-3 text-sm"
+              className="h-9 w-full rounded-lg border bg-white px-3 text-sm sm:w-auto"
             >
               {subsidiaries.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -56,15 +59,18 @@ export default async function HolidaysPage({
                 </option>
               ))}
             </select>
-            <button type="submit" className="h-9 rounded-lg bg-teal-700 px-3 text-sm text-white">
+            <button
+              type="submit"
+              className="h-9 rounded-lg bg-teal-700 px-3 text-sm text-white"
+            >
               View
             </button>
           </form>
         )}
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <ResponsiveTable>
+        <table className="w-full min-w-[320px] text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
               <th className="px-4 py-3">Holiday</th>
@@ -82,12 +88,14 @@ export default async function HolidaysPage({
             {holidays.map((h) => (
               <tr key={h.id} className="border-b border-slate-100">
                 <td className="px-4 py-3 font-medium">{h.name}</td>
-                <td className="px-4 py-3">{h.date.toLocaleDateString()}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {h.date.toLocaleDateString()}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {canManage && subsidiaryId && (
         <HolidayForm

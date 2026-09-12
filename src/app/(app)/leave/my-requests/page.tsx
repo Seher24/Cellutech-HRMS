@@ -26,11 +26,11 @@ export default async function MyLeavePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-900">My leave</h2>
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">My leave</h2>
           <p className="text-sm text-slate-500">Track request status and approval trail</p>
         </div>
-        <Link href="/leave/request">
-          <Button className="bg-teal-700 hover:bg-teal-800">New request</Button>
+        <Link href="/leave/request" className="w-full sm:w-auto">
+          <Button className="w-full bg-teal-700 hover:bg-teal-800 sm:w-auto">New request</Button>
         </Link>
       </div>
       <div className="space-y-3">

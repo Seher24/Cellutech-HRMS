@@ -213,9 +213,9 @@ export function EmployeeCreateForm(props: Props) {
           <Input {...register("password")} placeholder="Defaults to Password123!" />
         </div>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {message && <p className="text-sm text-teal-700">{message}</p>}
-      <Button type="submit" disabled={pending} className="bg-teal-700 hover:bg-teal-800">
+      {error && <p className="text-sm text-red-600 break-words">{error}</p>}
+      {message && <p className="text-sm text-teal-700 break-all">{message}</p>}
+      <Button type="submit" disabled={pending} className="w-full bg-teal-700 hover:bg-teal-800 sm:w-auto">
         {pending ? "Creating..." : "Create employee"}
       </Button>
     </form>

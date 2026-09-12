@@ -1,5 +1,7 @@
 "use client";
 
+import { ResponsiveTable } from "@/components/ui/responsive-table";
+
 type Item = {
   id: string;
   employee: string;
@@ -38,18 +40,21 @@ export function LeaveOverlapCalendar({ items }: { items: Item[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 [-webkit-overflow-scrolling:touch]">
         <div className="mb-3 text-xs text-slate-500">
           Timeline from {minDate} to {maxDate}. Red-tint rows have overlapping leave.
         </div>
-        <div className="min-w-[720px] space-y-2">
+        <div className="min-w-[560px] space-y-2 sm:min-w-[720px]">
           {items.map((item) => {
             const hasOverlap = item.overlapsWith.length > 0;
             return (
-              <div key={item.id} className="grid grid-cols-[180px_1fr] gap-3 items-center">
-                <div className="text-xs">
-                  <p className="font-medium text-slate-900">{item.employee}</p>
-                  <p className="text-slate-500">
+              <div
+                key={item.id}
+                className="grid grid-cols-[120px_1fr] items-center gap-2 sm:grid-cols-[180px_1fr] sm:gap-3"
+              >
+                <div className="min-w-0 text-xs">
+                  <p className="truncate font-medium text-slate-900">{item.employee}</p>
+                  <p className="truncate text-slate-500">
                     {item.leaveType} · {item.totalDays}d
                   </p>
                 </div>
@@ -85,8 +90,8 @@ export function LeaveOverlapCalendar({ items }: { items: Item[] }) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <ResponsiveTable>
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3">Employee</th>
@@ -106,11 +111,11 @@ export function LeaveOverlapCalendar({ items }: { items: Item[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">{item.leaveType}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 whitespace-nowrap">
                   {item.startDate} - {item.endDate}
                 </td>
                 <td className="px-4 py-3">{item.totalDays}</td>
-                <td className="px-4 py-3">
+                <td className="max-w-xs px-4 py-3 break-words">
                   {item.overlapsWith.length === 0 ? (
                     <span className="text-slate-400">None</span>
                   ) : (
@@ -123,7 +128,7 @@ export function LeaveOverlapCalendar({ items }: { items: Item[] }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </div>
   );
 }

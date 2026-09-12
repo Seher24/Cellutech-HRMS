@@ -249,7 +249,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
           My Dashboard
         </h2>
         <p className="text-sm text-slate-500">
@@ -288,10 +288,10 @@ export default async function DashboardPage() {
             {myRequests.map((r) => (
               <div
                 key={r.id}
-                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2"
               >
-                <div>
-                  <p className="text-sm font-medium">{r.leaveType.name}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{r.leaveType.name}</p>
                   <p className="text-xs text-slate-500">
                     {r.startDate.toLocaleDateString()} -{" "}
                     {r.endDate.toLocaleDateString()}
@@ -361,13 +361,13 @@ function DashboardShell({
 }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+      <div className="min-w-0">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
           {title}
         </h2>
         <p className="text-sm text-slate-500">{subtitle}</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {metrics.map((m) => (
           <Card key={m.label} className="border-slate-200/80 shadow-sm">
             <CardHeader className="pb-2">
@@ -376,7 +376,7 @@ function DashboardShell({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold text-slate-900">
+              <div className="text-2xl font-semibold text-slate-900 sm:text-3xl">
                 {m.value}
               </div>
             </CardContent>
@@ -384,7 +384,7 @@ function DashboardShell({
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <DashboardCharts title={chartTitle} data={chartData} />
         </div>
         <Card className="border-slate-200/80 shadow-sm">
@@ -396,9 +396,9 @@ function DashboardShell({
               <p key={n}>{n}</p>
             ))}
             {announcements?.map((a) => (
-              <div key={a.id}>
-                <p className="font-medium text-slate-900">{a.title}</p>
-                <p className="text-xs text-slate-500 line-clamp-3">{a.body}</p>
+              <div key={a.id} className="min-w-0">
+                <p className="break-words font-medium text-slate-900">{a.title}</p>
+                <p className="line-clamp-3 break-words text-xs text-slate-500">{a.body}</p>
               </div>
             ))}
             {!sideNotes?.length && !announcements?.length && (

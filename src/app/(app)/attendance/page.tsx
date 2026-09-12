@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AttendanceForm } from "@/components/attendance/attendance-form";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 
 export default async function AttendancePage() {
   const session = await auth();
@@ -42,8 +43,10 @@ export default async function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Attendance and timesheet</h2>
+      <div className="min-w-0">
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">
+          Attendance and timesheet
+        </h2>
         <p className="text-sm text-slate-500">
           Daily status plus check-in / check-out timestamps for payroll-ready records
         </p>
@@ -56,8 +59,8 @@ export default async function AttendancePage() {
         checkOutAt={myToday?.checkOutAt?.toLocaleTimeString() ?? null}
       />
 
-      <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <ResponsiveTable>
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
               <th className="px-4 py-3">Employee</th>
@@ -89,12 +92,14 @@ export default async function AttendancePage() {
                 <td className="px-4 py-3">
                   {r.checkOutAt ? r.checkOutAt.toLocaleTimeString() : "-"}
                 </td>
-                <td className="px-4 py-3 text-slate-500">{r.note ?? "-"}</td>
+                <td className="max-w-[12rem] truncate px-4 py-3 text-slate-500">
+                  {r.note ?? "-"}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </div>
   );
 }

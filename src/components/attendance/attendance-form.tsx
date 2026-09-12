@@ -29,10 +29,10 @@ export function AttendanceForm({
         <p className="mt-1 text-sm text-slate-500">
           Check-in: {checkInAt ?? "Not yet"} · Check-out: {checkOutAt ?? "Not yet"}
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <Button
             disabled={pending || !!checkInAt}
-            className="bg-teal-700 hover:bg-teal-800"
+            className="w-full bg-teal-700 hover:bg-teal-800 sm:w-auto"
             onClick={() => {
               startTransition(async () => {
                 await punchAttendanceAction({ type: "IN" });
@@ -45,6 +45,7 @@ export function AttendanceForm({
           <Button
             disabled={pending || !checkInAt || !!checkOutAt}
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => {
               startTransition(async () => {
                 const result = await punchAttendanceAction({ type: "OUT" });
@@ -63,14 +64,16 @@ export function AttendanceForm({
         <p className="mt-1 text-sm text-slate-500">
           Current: {currentStatus ?? "Not marked"}
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {STATUSES.map((status) => (
             <Button
               key={status}
               disabled={pending}
               variant={currentStatus === status ? "default" : "outline"}
               className={
-                currentStatus === status ? "bg-teal-700 hover:bg-teal-800" : ""
+                currentStatus === status
+                  ? "w-full bg-teal-700 hover:bg-teal-800 sm:w-auto"
+                  : "w-full sm:w-auto"
               }
               onClick={() => {
                 startTransition(async () => {

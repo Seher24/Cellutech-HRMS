@@ -42,7 +42,7 @@ export default async function AnnouncementsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Announcements</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Announcements</h2>
         <p className="text-sm text-slate-500">
           Post global or subsidiary-scoped updates for employees
         </p>

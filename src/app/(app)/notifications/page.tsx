@@ -16,9 +16,9 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Notifications</h2>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Notifications</h2>
           <p className="text-sm text-slate-500">Leave updates and approval alerts</p>
         </div>
         <MarkReadButton />
@@ -36,16 +36,19 @@ export default async function NotificationsPage() {
               n.isRead ? "border-slate-100 bg-white" : "border-teal-100 bg-teal-50/40"
             }`}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium text-slate-900">{n.title}</p>
-                <p className="text-sm text-slate-600">{n.message}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="font-medium text-slate-900 break-words">{n.title}</p>
+                <p className="text-sm text-slate-600 break-words">{n.message}</p>
                 <p className="mt-1 text-xs text-slate-400">
                   {n.createdAt.toLocaleString()}
                 </p>
               </div>
               {n.link && (
-                <Link href={n.link} className="text-sm text-teal-700 hover:underline">
+                <Link
+                  href={n.link}
+                  className="shrink-0 text-sm text-teal-700 hover:underline"
+                >
                   Open
                 </Link>
               )}

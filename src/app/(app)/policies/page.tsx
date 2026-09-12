@@ -36,7 +36,7 @@ export default async function PoliciesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Document vault</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Document vault</h2>
         <p className="text-sm text-slate-500">
           Central repository for HR policies, handbooks, and company documents
         </p>

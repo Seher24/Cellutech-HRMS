@@ -54,13 +54,13 @@ export default async function EmployeeDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-900">
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold text-slate-900 break-words sm:text-2xl">
               {employee.firstName} {employee.lastName}
             </h2>
-            <p className="text-sm text-slate-500">{employee.email}</p>
+            <p className="break-all text-sm text-slate-500">{employee.email}</p>
           </div>
           <Badge variant="secondary">{employee.status}</Badge>
         </div>

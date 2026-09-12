@@ -23,7 +23,7 @@ export default async function MyProfilePage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">My profile</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">My profile</h2>
         <p className="text-sm text-slate-500">Update your personal contact details</p>
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

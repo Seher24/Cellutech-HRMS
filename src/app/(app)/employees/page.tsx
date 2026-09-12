@@ -7,6 +7,7 @@ import { hasPermission } from "@/lib/rbac";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmployeeCreateForm } from "@/components/employees/employee-create-form";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 
 export default async function EmployeesPage({
   searchParams,
@@ -99,29 +100,31 @@ export default async function EmployeesPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Employees</h2>
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Employees</h2>
           <p className="text-sm text-slate-500">
             Directory with search and scope-aware filters
           </p>
         </div>
         <Link href="/employees/me">
-          <Button variant="outline">My profile</Button>
+          <Button variant="outline" className="w-full sm:w-auto">
+            My profile
+          </Button>
         </Link>
       </div>
 
-      <form className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <form className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:flex-wrap">
         <input
           name="q"
           defaultValue={params.q}
           placeholder="Search name or email"
-          className="h-9 flex-1 rounded-lg border border-slate-200 px-3 text-sm"
+          className="h-9 w-full min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm sm:min-w-[12rem]"
         />
         {session.user.role === RoleName.SUPER_ADMIN && (
           <select
             name="subsidiaryId"
             defaultValue={params.subsidiaryId ?? ""}
-            className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+            className="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm sm:w-auto"
           >
             <option value="">All subsidiaries</option>
             {subsidiaries.map((s) => (
@@ -134,20 +137,20 @@ export default async function EmployeesPage({
         <select
           name="status"
           defaultValue={params.status ?? ""}
-          className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+          className="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm sm:w-auto"
         >
           <option value="">All statuses</option>
           <option value="ACTIVE">Active</option>
           <option value="ON_LEAVE">On leave</option>
           <option value="TERMINATED">Terminated</option>
         </select>
-        <Button type="submit" className="bg-teal-700 hover:bg-teal-800">
+        <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 sm:w-auto">
           Filter
         </Button>
       </form>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <ResponsiveTable>
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3">Name</th>
@@ -191,7 +194,7 @@ export default async function EmployeesPage({
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {canManage && (
         <EmployeeCreateForm

@@ -70,7 +70,7 @@ export default async function LeaveCalendarPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Leave calendar</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Leave calendar</h2>
         <p className="text-sm text-slate-500">
           Approved leave in your scope with overlap highlighting for coverage planning
         </p>

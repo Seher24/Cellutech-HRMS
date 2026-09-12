@@ -29,7 +29,7 @@ export default async function OrgChartPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Organization chart</h2>
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Organization chart</h2>
           <p className="text-sm text-slate-500">
             {isGlobal
               ? "Consolidated global reporting hierarchy across all subsidiaries"

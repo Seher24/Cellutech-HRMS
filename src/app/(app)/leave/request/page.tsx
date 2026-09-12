@@ -23,7 +23,7 @@ export default async function LeaveRequestPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Request leave</h2>
+        <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">Request leave</h2>
         <p className="text-sm text-slate-500">
           Working days exclude weekends and subsidiary holidays.
         </p>
